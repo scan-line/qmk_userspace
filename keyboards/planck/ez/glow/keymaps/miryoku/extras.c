@@ -99,14 +99,14 @@ void flash_led(const uint8_t* pattern) {
   token = defer_exec(FLASH_LED_TICK, flash_led_callback, NULL);
 }
 
-void suspend_power_down_custom(void) {
+void suspend_power_down_extra(void) {
   // May be run multiple times on suspend
   led.suspended = true;
   planck_ez_left_led_off();
   planck_ez_right_led_off();
 }
 
-void suspend_wakeup_init_custom(void) {
+void suspend_wakeup_init_extra(void) {
   led.suspended = false;
   if (led.left)
     planck_ez_left_led_on();
@@ -118,17 +118,17 @@ void suspend_wakeup_init_custom(void) {
 // Feedback
 
 // On/off timings - must end in 0
-const uint8_t mode_flash[] = {10, 0};
+const uint8_t os_mode_flash[] = {10, 0};
 const uint8_t default_layer_flash[] = {1, 1, 1, 0};
 const uint8_t toggle_on_flash[] = {10, 0};
 const uint8_t detent_flash[] = {1, 0};
 const uint8_t cancel_flash[] = {0};
 
-void show_mode_custom(uint16_t keycode) {
-  flash_led(mode_flash);
+void show_os_mode_extra(uint16_t keycode) {
+  flash_led(os_mode_flash);
 }
 
-void show_layer_custom(uint8_t layer) {
+void show_layer_extra(uint8_t layer) {
   switch (layer) {
     case U_BASE:
     case U_EXTRA:
@@ -159,18 +159,18 @@ void show_layer_custom(uint8_t layer) {
     }
 }
 
-void show_default_layer_custom(uint8_t layer) {
+void show_default_layer_extra(uint8_t layer) {
   flash_led(default_layer_flash);
 }
 
-void show_toggle_custom(uint16_t keycode, bool value) {
+void show_toggle_extra(uint16_t keycode, bool value) {
   if (value)
     flash_led(toggle_on_flash);
   else
     flash_led(cancel_flash);
 }
 
-void show_value_custom(uint16_t keycode, uint16_t value, bool detent) {
+void show_value_extra(uint16_t keycode, uint16_t value, bool detent) {
   if (detent)
     flash_led(detent_flash);
   else
@@ -180,7 +180,7 @@ void show_value_custom(uint16_t keycode, uint16_t value, bool detent) {
 
 // Initialization
 
-void eeconfig_init_custom(void) {
+void eeconfig_init_extra(void) {
   // Turn the initial led level down from 4 to 1
   keyboard_config.led_level = 1;
   eeconfig_update_kb(keyboard_config.raw);

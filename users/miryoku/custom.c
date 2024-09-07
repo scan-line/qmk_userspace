@@ -54,7 +54,7 @@ user_config_t user_config;
 
 #ifdef AUDIO_ENABLE
 
-float mode_set_song[][2] = MODE_SET_SONG;
+float os_mode_set_song[][2] = OS_MODE_SET_SONG;
 float layer_set_song[][2] = LAYER_SET_SONG;
 float toggle_on_song[][2] = TOGGLE_ON_SONG;
 float toggle_off_song[][2] = TOGGLE_OFF_SONG;
@@ -69,30 +69,30 @@ float detent_song[][2] = DETENT_SONG;
 
 // Feedback
 
-__attribute__((weak)) void show_mode_custom(uint16_t keycode) {
+__attribute__((weak)) void show_os_mode_extra(uint16_t keycode) {
 }
 
-void show_mode(uint16_t keycode) {
-  PLAY_SONG(mode_set_song);
-  show_mode_custom(keycode);
+void show_os_mode(uint16_t keycode) {
+  PLAY_SONG(os_mode_set_song);
+  show_os_mode_extra(keycode);
 }
 
-__attribute__((weak)) void show_layer_custom(uint8_t layer) {
+__attribute__((weak)) void show_layer_extra(uint8_t layer) {
 }
 
 void show_layer(uint8_t layer) {
-  show_layer_custom(layer);
+  show_layer_extra(layer);
 }
 
-__attribute__((weak)) void show_default_layer_custom(uint8_t layer) {
+__attribute__((weak)) void show_default_layer_extra(uint8_t layer) {
 }
 
 void show_default_layer(uint8_t layer) {
   PLAY_SONG(layer_set_song);
-  show_default_layer_custom(layer);
+  show_default_layer_extra(layer);
 }
 
-__attribute__((weak)) void show_toggle_custom(uint16_t keycode, bool value) {
+__attribute__((weak)) void show_toggle_extra(uint16_t keycode, bool value) {
 }
 
 void show_toggle(uint16_t keycode, bool value) {
@@ -100,16 +100,16 @@ void show_toggle(uint16_t keycode, bool value) {
     PLAY_SONG(toggle_on_song);
   else
     PLAY_SONG(toggle_off_song);
-  show_toggle_custom(keycode, value);
+  show_toggle_extra(keycode, value);
 }
 
-__attribute__((weak)) void show_value_custom(uint16_t keycode, uint16_t value, bool detent) {
+__attribute__((weak)) void show_value_extra(uint16_t keycode, uint16_t value, bool detent) {
 }
 
 void show_value(uint16_t keycode, uint16_t value, bool detent) {
   if (detent)
     PLAY_SONG(detent_song);
-  show_value_custom(keycode, value, detent);
+  show_value_extra(keycode, value, detent);
 }
 
 
@@ -155,23 +155,23 @@ bool process_os_mode(os_mode_t mode, keyrecord_t *record) {
   
   os_mode = mode;
   
-  if (mode == OS_MODE_MAC)
+  if (os_mode == OS_MODE_MAC)
     process_magic(QK_MAGIC_SWAP_CTL_GUI, record);
   else
     process_magic(QK_MAGIC_UNSWAP_CTL_GUI, record);
   
-  user_config.os_mode_linux = (mode == OS_MODE_LNX);
+  user_config.os_mode_linux = (os_mode == OS_MODE_LNX);
   eeconfig_update_user(user_config.raw);
   
-  switch(mode) {
+  switch(os_mode) {
     case OS_MODE_WIN:
-      show_mode(U_WIN);
+      show_os_mode(U_WIN);
       break;
     case OS_MODE_MAC:
-      show_mode(U_MAC);
+      show_os_mode(U_MAC);
       break;
     case OS_MODE_LNX:
-      show_mode(U_LNX);
+      show_os_mode(U_LNX);
       break;
     default:
       break;
@@ -469,23 +469,23 @@ void housekeeping_task_user(void) {
 }
 
 
-__attribute__((weak)) void suspend_power_down_custom(void) {
+__attribute__((weak)) void suspend_power_down_extra(void) {
 }
 
 
 void suspend_power_down_user(void) {
   // May be run multiple times on suspend
   double_tap_stop();
-  suspend_power_down_custom();
+  suspend_power_down_extra();
 }
 
 
-__attribute__((weak)) void suspend_wakeup_init_custom(void) {
+__attribute__((weak)) void suspend_wakeup_init_extra(void) {
 }
 
 
 void suspend_wakeup_init_user(void) {
-  suspend_wakeup_init_custom();
+  suspend_wakeup_init_extra();
 }
 
 
@@ -613,7 +613,7 @@ bool process_record_shift_override(uint16_t keycode, keyrecord_t* record) {
   return false;
 }
 
-bool get_custom_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
+bool get_extra_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
   const uint16_t replacement = shift_override(keycode, record);
   return replacement != KC_TRANSPARENT;
 }
@@ -640,10 +640,16 @@ void autoshift_press_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
 
 // Key processing
 
+__attribute__((weak)) bool process_record_extra(uint16_t keycode, keyrecord_t *record) {
+  return true;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   if (!process_record_double_tap(keycode, record))
     return false;
   if (!process_record_shift_override(keycode, record))
+    return false;
+  if (!process_record_extra(keycode, record))
     return false;
 
   switch (keycode) {
@@ -722,7 +728,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 
 // Initialization
 
-__attribute__((weak)) void eeconfig_init_custom(void) {
+__attribute__((weak)) void eeconfig_init_extra(void) {
 }
 
 void eeconfig_init_user(void) {
@@ -732,7 +738,7 @@ void eeconfig_init_user(void) {
   user_config.os_mode_linux = false;
   
   eeconfig_update_user(user_config.raw);
-  eeconfig_init_custom();
+  eeconfig_init_extra();
 }
 
 void keyboard_post_init_user(void) {

@@ -5,6 +5,11 @@
 
 #pragma once
 
+#ifndef __ASSEMBLER__
+// Inject custom implementations into miryoku.c
+#include "custom.h"
+#endif
+
 
 // Layers
 
@@ -25,7 +30,7 @@ U_NP,              U_NP,              KC_LPRN,           KC_RPRN,           KC_U
 
 #ifdef AUDIO_ENABLE
 
-#define MODE_SET_SONG SONG(AG_NORM_SOUND)
+#define OS_MODE_SET_SONG SONG(AG_NORM_SOUND)
 #define LAYER_SET_SONG SONG(AG_SWAP_SOUND)
 #define TOGGLE_ON_SONG SONG(AUDIO_ON_SOUND)
 #define TOGGLE_OFF_SONG SONG(AUDIO_OFF_SOUND)
@@ -44,11 +49,11 @@ U_NP,              U_NP,              KC_LPRN,           KC_RPRN,           KC_U
 // Lighting design
 
 #ifdef RGBLIGHT_ENABLE
-#  define RGBLIGHT_DISABLE_KEYCODES
+#define RGBLIGHT_DISABLE_KEYCODES
 #endif
 
 #ifdef RGB_MATRIX_ENABLE
-#  define RGB_MATRIX_DISABLE_KEYCODES
+#define RGB_MATRIX_DISABLE_KEYCODES
 #endif
 
 
@@ -63,10 +68,3 @@ U_NP,              U_NP,              KC_LPRN,           KC_RPRN,           KC_U
 
 // Caps Word
 #define CAPS_WORD_INVERT_ON_SHIFT
-
-
-// Inject custom implementations into miryoku.c
-
-#ifndef __ASSEMBLER__
-#include "custom.h"
-#endif

@@ -27,7 +27,7 @@
 #define ANIM_SIZE 96
 
 // Status variables
-bool isJumping  = false;
+bool isJumping = false;
 bool showJump = false;
 
 static void render_luna(int x, int y) {
@@ -171,10 +171,10 @@ void process_record_luna(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case KC_SPC:
       if (record->event.pressed) {
-        isJumping  = true;
+        isJumping = true;
         showJump = true;
       } else {
-        isJumping  = false;
+        isJumping = false;
       }
       break;
     default:
@@ -211,7 +211,7 @@ void render_message(int x, int y) {
   oled_write_P(message, false);
 }
 
-void show_mode_custom(uint16_t keycode) {
+void show_os_mode_extra(uint16_t keycode) {
   switch (keycode) {
     case U_WIN:
       flash_message(PSTR("Win"));
@@ -227,7 +227,7 @@ void show_mode_custom(uint16_t keycode) {
   }
 }
 
-void show_default_layer_custom(uint8_t layer) {
+void show_default_layer_extra(uint8_t layer) {
   set_message(empty_message);
   switch (layer) {
     case U_BASE:
@@ -265,14 +265,14 @@ void show_default_layer_custom(uint8_t layer) {
   }
 }
 
-void show_toggle_custom(uint16_t keycode, bool value) {
+void show_toggle_extra(uint16_t keycode, bool value) {
   if (value)
     flash_message(PSTR("[x]"));
   else
     flash_message(PSTR("[ ]"));
 }
 
-void show_value_custom(uint16_t keycode, uint16_t value, bool detent) {
+void show_value_extra(uint16_t keycode, uint16_t value, bool detent) {
   if (detent)
     flash_message(PSTR("-=-"));
   else
@@ -310,10 +310,7 @@ void oled_task_right(void) {
   render_miryoku_logo(0, 5);
 }
 
-bool oled_task_kb(void) {
-  if (!oled_task_user()) {
-    return false;
-  }
+bool oled_task_user(void) {
   if (is_keyboard_left()) {
     oled_task_left();
   } else {
@@ -323,11 +320,11 @@ bool oled_task_kb(void) {
   return false;
 }
 
-bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
-  process_record_luna(keycode, record);
-  return process_record_user(keycode, record);
+oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  return OLED_ROTATION_270;
 }
 
-oled_rotation_t oled_init_kb(oled_rotation_t rotation) {
-  return OLED_ROTATION_270;
+bool process_record_extra(uint16_t keycode, keyrecord_t *record) {
+  process_record_luna(keycode, record);
+  return true;
 }
