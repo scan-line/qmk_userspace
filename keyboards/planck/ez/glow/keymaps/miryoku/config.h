@@ -8,22 +8,6 @@
 #include "layouts/planck_mit/miryoku/config.h"
 
 
-// Lighting design
-
-#define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_CUSTOM_SLOWDROPS
-#define RGB_MATRIX_DEFAULT_HUE 0
-#define RGB_MATRIX_DEFAULT_SAT 255
-#define RGB_MATRIX_DEFAULT_VAL (RGB_MATRIX_MAXIMUM_BRIGHTNESS / 2)
-#define RGB_MATRIX_DEFAULT_SPD 60
-#define RGB_MATRIX_HUE_STEP 8
-#define RGB_MATRIX_SAT_STEP 16
-#define RGB_MATRIX_VAL_STEP 16
-#define RGB_MATRIX_SPD_STEP 16
-#define RGB_MATRIX_TIMEOUT 900000
-
-// Enable rgb_matrix_kb.inc
-#define RGB_MATRIX_CUSTOM_KB
-
 // Disable all quantum effects
 #undef ENABLE_RGB_MATRIX_SOLID_COLOR
 #undef ENABLE_RGB_MATRIX_ALPHAS_MODS
