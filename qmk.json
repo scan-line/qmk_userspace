@@ -1,7 +1,6 @@
 {
     "userspace_version": "1.0",
     "build_targets": [
-        ["crkbd/r2g", "miryoku"],
         ["crkbd/rev1", "miryoku"],
         ["planck/ez/glow", "miryoku"]
     ]

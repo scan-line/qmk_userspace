@@ -6,17 +6,11 @@
 #include QMK_KEYBOARD_H
 
 #include "miryoku.h"
+#include "custom.h"
 #include "process_magic.h"
 
 
 // Qmk definitions
-
-// Required by RGB_MATRIX_DEFAULT_VAL
-// Duplicated from rgb_matrix.c
-#if !defined(RGB_MATRIX_MAXIMUM_BRIGHTNESS) || RGB_MATRIX_MAXIMUM_BRIGHTNESS > UINT8_MAX
-#  undef RGB_MATRIX_MAXIMUM_BRIGHTNESS
-#  define RGB_MATRIX_MAXIMUM_BRIGHTNESS UINT8_MAX
-#endif
 
 // Oneshot no-ops
 #ifdef NO_ACTION_ONESHOT
@@ -182,17 +176,17 @@ bool process_os_mode(os_mode_t mode, keyrecord_t *record) {
 
 // User key
 
-const char* const PROGMEM userkey_win =
+const char* const userkey_win =
   SS_LALT(
     SS_TAP(X_KP_0) SS_TAP(X_KP_1) SS_TAP(X_KP_6) SS_TAP(X_KP_3)
   );
-const char* const PROGMEM userkey_mac =
+const char* const userkey_mac =
   SS_LALT("3");
-const char* const PROGMEM userkey_lnx =
+const char* const userkey_lnx =
   SS_LALT("U")
   "00a3"
   " ";
-const char* const PROGMEM userkey_warn =
+const char* const userkey_warn =
   "?";
 
 const char* userkey_string(void) {
@@ -220,7 +214,7 @@ const char* userkey_string(void) {
 }
 
 void register_userkey(void) {
-  send_string_with_delay_P(userkey_string(), TAP_CODE_DELAY);
+  send_string_with_delay(userkey_string(), TAP_CODE_DELAY);
 }
 
 void unregister_userkey(void) {
@@ -261,14 +255,14 @@ typedef enum {
   CLIP_END,
 } clip_t;
 
-const uint16_t PROGMEM clipcodes[][CLIP_END] = {
+const uint16_t clipcodes[][CLIP_END] = {
   [OS_MODE_WIN] = { LCTL(KC_X), LCTL(KC_C), LCTL(KC_V), LCTL(KC_Z), LCTL(KC_Y), },
   [OS_MODE_MAC] = { LCMD(KC_X), LCMD(KC_C), LCMD(KC_V), LCMD(KC_Z), SCMD(KC_Z), },
   [OS_MODE_LNX] = { U_CUT, U_CPY, U_PST, U_UND, U_RDO, },
 };
 
 bool process_clipcode(clip_t clip, keyrecord_t *record) {
-  const uint16_t keycode = pgm_read_word(&clipcodes[os_mode][clip]);
+  const uint16_t keycode = clipcodes[os_mode][clip];
   if (record->event.pressed)
     register_code16(keycode);
   else
