@@ -186,36 +186,53 @@ const char* const userkey_lnx =
   SS_LALT("U")
   "00a3"
   " ";
-const char* const userkey_warn =
-  "?";
 
-const char* userkey_string(void) {
+void tap_userkey(void) {
+  // Save and cancel mods.
+  const uint8_t saved_mods = get_mods();
+  del_mods(MOD_MASK_CSAG);
+  del_weak_mods(MOD_MASK_CSAG);
+  del_oneshot_mods(MOD_MASK_CSAG);
+
+  // Toggle lock keys?
+  const led_t saved_led_state = host_keyboard_led_state();
+  // Linux unicode entry requires an uppercase U.
+  // Caps lock interferes.
+  const bool toggle_caps_lock = saved_led_state.caps_lock;
+  // Windows numpad cp1252 entry requires num-lock.
+  const bool toggle_num_lock = !saved_led_state.num_lock;
+
+  // Send key presses.
   switch (os_mode) {
     case OS_MODE_WIN:
-      // Numpad unicode entry requires num-lock on
-      // (Usually the default state)
-      if (host_keyboard_led_state().num_lock)
-        return userkey_win;
-      else
-        return userkey_warn;
+      if (toggle_num_lock)
+        tap_code(KC_NUM_LOCK);
+      send_string_with_delay(userkey_win, TAP_CODE_DELAY);
+      if (toggle_num_lock)
+        tap_code(KC_NUM_LOCK);
+      break;
     case OS_MODE_MAC:
-      // No preconditions
-      return userkey_mac;
+      send_string_with_delay(userkey_mac, TAP_CODE_DELAY);
+      break;
     case OS_MODE_LNX:
-      // Linux unicode entry requires a Ctrl-Shift-U
-      // Caps lock interferes
-      if (!host_keyboard_led_state().caps_lock)
-        return userkey_lnx;
-      else
-        return userkey_warn;
+      if (toggle_caps_lock)
+        tap_code(KC_CAPS_LOCK);
+      send_string_with_delay(userkey_lnx, TAP_CODE_DELAY);
+      if (toggle_caps_lock)
+        tap_code(KC_CAPS_LOCK);
+      break;
     default:
-      return userkey_warn;
+      break;
   }
+  
+  // Restore mods.
+  set_mods(saved_mods);
+  send_keyboard_report();
 }
 
 bool process_userkey(uint16_t keycode, keyrecord_t *record) {
   if (record->event.pressed)
-    send_string_with_delay(userkey_string(), TAP_CODE_DELAY);
+    tap_userkey();
   return false;
 }
 
@@ -421,10 +438,30 @@ bool caps_word_press_user(uint16_t keycode) {
 
 // Shift and Auto Shift overrides
 
+#define ko_make_with_action_and_layers(trigger_mods_, trigger_key, action, layer_mask)    \
+  ((const key_override_t){                                                                \
+      .trigger_mods                           = (trigger_mods_),                          \
+      .layers                                 = (layer_mask),                             \
+      .suppressed_mods                        = 0,                                        \
+      .options                                = ko_options_default,                       \
+      .negative_mod_mask                      = 0,                                        \
+      .custom_action                          = action,                                   \
+      .context                                = NULL,                                     \
+      .trigger                                = (trigger_key),                            \
+      .replacement                            = KC_NO,                                    \
+      .enabled                                = NULL                                      \
+  })
+
+bool nine_shift_action(bool key_down, void *context) {
+  if (key_down)
+    tap_userkey();
+  return false;
+}
+
 #define LAYER_MASK_NUM (1 << U_NUM)
 
 const key_override_t capsword_shift_override = ko_make_basic(MOD_MASK_SHIFT, CW_TOGG, KC_CAPS);
-const key_override_t nine_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_9, U_USER, LAYER_MASK_NUM);
+const key_override_t nine_shift_override = ko_make_with_action_and_layers(MOD_MASK_SHIFT, KC_9, nine_shift_action, LAYER_MASK_NUM);
 const key_override_t dot_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_DOT, KC_LEFT_PAREN, LAYER_MASK_NUM);
 // The following key overrides give auto-repeat consistency to the left-hand thumb keys.
 // Without the key override these shifted keys tap (because of auto-shift).
@@ -433,8 +470,7 @@ const key_override_t zero_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, K
 const key_override_t minus_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_MINUS, KC_UNDERSCORE, LAYER_MASK_NUM);
 const key_override_t* const custom_overrides[] = {
   &capsword_shift_override,
-  // Key override does not work for U_USER keycode.
-  // &nine_shift_override,
+  &nine_shift_override,
   &dot_shift_override,
   &zero_shift_override,
   &minus_shift_override,
