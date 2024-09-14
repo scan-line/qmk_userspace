@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include <stdint.h>
-
-#include "action_layer.h"
 #include "keycodes.h"
 
 
@@ -25,46 +22,3 @@ enum my_keycodes {
   U_RGB_VAI,
   U_AUD_TOG,
 };
-
-
-// Custom double-tap implementation
-
-#define QK_DT_GET_INDEX(CODE) QK_TAP_DANCE_GET_INDEX(CODE)
-#define IS_QK_DOUBLE_TAP IS_QK_TAP_DANCE
-
-typedef struct {
-  uint8_t count;
-} double_tap_state_t;
-
-typedef void (*double_tap_function_t)(double_tap_state_t *state, void *reserved);
-
-extern double_tap_function_t double_taps[];
-
-
-#define ACTION_TAP_DANCE_FN(FUNCTION) FUNCTION
-#define tap_dance_state_t double_tap_state_t
-#define tap_dance_action_t double_tap_function_t
-#define tap_dance_actions double_taps
-
-
-// Custom key-override implementation
-
-typedef struct {
-  uint16_t trigger;
-  uint16_t replacement;
-  layer_state_t layers;
-} shift_override_t;
-
-#define make_shift_override(TRIGGER, REPLACEMENT, LAYERS) \
-  ((const shift_override_t){        \
-    .trigger = (TRIGGER),           \
-    .replacement = (REPLACEMENT),   \
-    .layers = (LAYERS)              \
-  })
-
-extern const shift_override_t* const shift_overrides[];
-
-
-#define key_override_t shift_override_t
-#define ko_make_basic(MASK, TRIGGER, REPLACEMENT) \
-  make_shift_override(TRIGGER, REPLACEMENT, ~0)

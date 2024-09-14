@@ -213,34 +213,10 @@ const char* userkey_string(void) {
   }
 }
 
-void register_userkey(void) {
-  send_string_with_delay(userkey_string(), TAP_CODE_DELAY);
-}
-
-void unregister_userkey(void) {
-}
-
-void tap_code16_plus(uint16_t keycode) {
-  if (keycode == U_USER) {
-    register_userkey();
-    wait_ms(TAP_CODE_DELAY);
-    unregister_userkey();
-  } else {
-    tap_code16(keycode);
-  }
-}
-
-bool process_code16_plus(uint16_t keycode, keyrecord_t *record) {
-  if (keycode == U_USER) {
-    if (record->event.pressed)
-      register_userkey();
-    else
-      unregister_userkey();
-    return false;
-  } else {
-    // Let qmk handle the key
-    return true;
-  }
+bool process_userkey(uint16_t keycode, keyrecord_t *record) {
+  if (record->event.pressed)
+    send_string_with_delay(userkey_string(), TAP_CODE_DELAY);
+  return false;
 }
 
 
@@ -419,88 +395,6 @@ bool process_rgb_val(keyrecord_t *record) {
 #endif
 
 
-// Double tap
-
-typedef struct {
-  uint16_t keycode;
-  uint16_t timer;
-} double_tap_t;
-
-
-static double_tap_t double_tap = {
-  .keycode = KC_NO,
-  .timer = 0,
-};
-
-
-bool is_double_tap(uint16_t keycode, keyrecord_t *record) {
-  if (record->event.pressed)
-    return (keycode == double_tap.keycode && !timer_expired(record->event.time, double_tap.timer));
-  else
-    return false;
-}
-
-
-void double_tap_start(uint16_t keycode, keyrecord_t *record) {
-  double_tap.keycode = keycode;
-  double_tap.timer = record->event.time + GET_TAPPING_TERM(keycode, record);
-}
-
-
-void double_tap_stop(void) {
-  double_tap.keycode = KC_NO;
-}
-
-
-void double_tap_task(void) {
-  if (double_tap.keycode && timer_expired(timer_read(), double_tap.timer))
-    double_tap_stop();
-}
-
-
-void housekeeping_task_user(void) {
-  double_tap_task();
-}
-
-
-__attribute__((weak)) void suspend_power_down_extra(void) {
-}
-
-
-void suspend_power_down_user(void) {
-  // May be run multiple times on suspend
-  double_tap_stop();
-  suspend_power_down_extra();
-}
-
-
-__attribute__((weak)) void suspend_wakeup_init_extra(void) {
-}
-
-
-void suspend_wakeup_init_user(void) {
-  suspend_wakeup_init_extra();
-}
-
-
-bool process_record_double_tap(uint16_t keycode, keyrecord_t *record) {
-  if (!IS_QK_DOUBLE_TAP(keycode))
-    return true;
-  
-  if (is_double_tap(keycode, record)) {
-    double_tap_stop();
-    // Call registered function with a count of 2
-    const uint8_t index = QK_DT_GET_INDEX(keycode);
-    double_tap_function_t function = double_taps[index];
-    double_tap_state_t state = {.count = 2};
-    function(&state, NULL);
-  } else {
-    double_tap_start(keycode, record);
-  }
-  return false;
-}
-
-
 // Caps word
 
 bool caps_word_press_user(uint16_t keycode) {
@@ -527,44 +421,41 @@ bool caps_word_press_user(uint16_t keycode) {
 
 // Shift and Auto Shift overrides
 
-// Adapted from Pascal Getreuer's compact custom-shift implementation
-// https://getreuer.info/posts/keyboards/custom-shift-keys/index.html
-
-#define LAYER_MASK_NAV (1 << U_NAV)
 #define LAYER_MASK_NUM (1 << U_NUM)
 
-// Defined in miryoku.c
-extern const shift_override_t capsword_key_override;
-
-const shift_override_t dot_key_override = make_shift_override(KC_DOT, KC_LEFT_PAREN, LAYER_MASK_NUM);
-const shift_override_t nine_key_override = make_shift_override(KC_9, U_USER, LAYER_MASK_NUM);
-const shift_override_t* const shift_overrides[] = {
-  &capsword_key_override,
-  &dot_key_override,
-  &nine_key_override,
+const key_override_t capsword_shift_override = ko_make_basic(MOD_MASK_SHIFT, CW_TOGG, KC_CAPS);
+const key_override_t nine_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_9, U_USER, LAYER_MASK_NUM);
+const key_override_t dot_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_DOT, KC_LEFT_PAREN, LAYER_MASK_NUM);
+// The following key overrides give auto-repeat consistency to the left-hand thumb keys.
+// Without the key override these shifted keys tap (because of auto-shift).
+// With the key override these shifted keys press/release (like the dot-key override).
+const key_override_t zero_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_0, KC_RIGHT_PAREN, LAYER_MASK_NUM);
+const key_override_t minus_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_MINUS, KC_UNDERSCORE, LAYER_MASK_NUM);
+const key_override_t* const custom_overrides[] = {
+  &capsword_shift_override,
+  // Key override does not work for U_USER keycode.
+  // &nine_shift_override,
+  &dot_shift_override,
+  &zero_shift_override,
+  &minus_shift_override,
 };
 
-uint16_t shift_override_count(void) {
-  return ARRAY_SIZE(shift_overrides);
+uint16_t key_override_count(void) {
+  return ARRAY_SIZE(custom_overrides);
 }
 
-const shift_override_t* shift_override_get(uint16_t shift_override_idx) {
-  if (shift_override_idx >= shift_override_count()) {
+const key_override_t* key_override_get(uint16_t key_override_idx) {
+  if (key_override_idx >= key_override_count()) {
     return NULL;
   }
-  return shift_overrides[shift_override_idx];
+  return custom_overrides[key_override_idx];
 }
 
-uint16_t shift_override(uint16_t keycode, keyrecord_t *record) {
-  // For tap-hold keys, skip holds and match taps
-  const bool tap_hold = IS_QK_MOD_TAP(keycode) || IS_QK_LAYER_TAP(keycode);
-  if (tap_hold && record->tap.count == 0)
-    return KC_TRANSPARENT;
-
-  // Look for matching override
+uint16_t autoshift_override(uint16_t keycode, keyrecord_t *record) {
+  // Look for matching key override
   const uint8_t layer = 1 << read_source_layers_cache(record->event.key);
-  for (uint8_t i = 0; i < shift_override_count(); i++) {
-    const shift_override_t *const override = shift_override_get(i);
+  for (uint8_t i = 0; i < key_override_count(); i++) {
+    const key_override_t *const override = key_override_get(i);
     if (!override)
       break;
 
@@ -582,43 +473,11 @@ uint16_t shift_override(uint16_t keycode, keyrecord_t *record) {
   return KC_TRANSPARENT;
 }
 
-bool process_record_shift_override(uint16_t keycode, keyrecord_t* record) {
-  // Overrides are tapped - nothing to unregister
-  if (!record->event.pressed)
-    return true;
-
-  // Shift?
-  const uint8_t real_mods = get_mods();
-  const uint8_t mods = real_mods | get_weak_mods() | get_oneshot_mods();
-  if ((mods & MOD_MASK_SHIFT) == 0)
-    return true;
-
-  // Replace?
-  const uint16_t replacement = shift_override(keycode, record);
-  if (replacement == KC_TRANSPARENT)
-    return true;
-  
-  // Tap to be consistent with no-override behaviour
-  del_weak_mods(MOD_MASK_SHIFT);
-  del_oneshot_mods(MOD_MASK_SHIFT);
-  unregister_mods(MOD_MASK_SHIFT);
-  tap_code16_plus(replacement);
-  set_mods(real_mods);
-  return false;
-}
-
-bool get_extra_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
-  const uint16_t replacement = shift_override(keycode, record);
-  return replacement != KC_TRANSPARENT;
-}
-
 void autoshift_press_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
-  // Beware - record->event.pressed may be false
-
-  const uint16_t replacement = shift_override(keycode, record);
+  const uint16_t replacement = autoshift_override(keycode, record);
   if (replacement != KC_TRANSPARENT) {
     // Tap to be consistent with no-override behaviour
-    tap_code16_plus(shifted ? replacement : keycode);
+    register_code16(shifted ? replacement : keycode);
     return;
   }
 
@@ -628,8 +487,19 @@ void autoshift_press_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
   register_code16((IS_RETRO(keycode)) ? keycode & 0xFF : keycode);
 }
 
-// Custom release not required because we tap, rather than press/release
-// void autoshift_release_user(uint16_t keycode, bool shifted, keyrecord_t *record) { ... }
+void autoshift_release_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
+  const uint16_t replacement = autoshift_override(keycode, record);
+  if (replacement != KC_TRANSPARENT) {
+    // Tap to be consistent with no-override behaviour
+    unregister_code16(shifted ? replacement : keycode);
+    return;
+  }
+
+  // & 0xFF gets the Tap key for Tap Holds, required when using Retro Shift
+  // The IS_RETRO check isn't really necessary here, always using
+  // keycode & 0xFF would be fine.
+  unregister_code16((IS_RETRO(keycode)) ? keycode & 0xFF : keycode);
+}
 
 
 // Key processing
@@ -639,16 +509,12 @@ __attribute__((weak)) bool process_record_extra(uint16_t keycode, keyrecord_t *r
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  if (!process_record_double_tap(keycode, record))
-    return false;
-  if (!process_record_shift_override(keycode, record))
-    return false;
   if (!process_record_extra(keycode, record))
     return false;
-
+  
   switch (keycode) {
     case U_USER:
-      return process_code16_plus(keycode, record);
+      return process_userkey(keycode, record);
     case U_WIN:
       return process_os_mode(OS_MODE_WIN, record);
     case U_MAC:
@@ -717,6 +583,24 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     case TD(U_TD_U_FUN):
       return DOUBLE_TAPPING_TERM;
   }
+}
+
+
+// Power
+
+__attribute__((weak)) void suspend_power_down_extra(void) {
+}
+
+void suspend_power_down_user(void) {
+  // May be run multiple times on suspend
+  suspend_power_down_extra();
+}
+
+__attribute__((weak)) void suspend_wakeup_init_extra(void) {
+}
+
+void suspend_wakeup_init_user(void) {
+  suspend_wakeup_init_extra();
 }
 
 

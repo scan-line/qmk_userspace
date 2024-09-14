@@ -6,7 +6,6 @@
 #pragma once
 
 #ifndef __ASSEMBLER__
-// Inject custom implementations into miryoku.c
 #include "custom.h"
 #endif
 
