@@ -27,7 +27,7 @@ static void slowdrops_set_color(int i, effect_params_t* params) {
 
 bool SLOWDROPS(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
-  
+
   static uint32_t wait_timer = 0;
   inline uint32_t interval(void) {
     return 3000 / scale16by8(qadd8(rgb_matrix_config.speed, 16), 16);

@@ -97,10 +97,10 @@ void show_toggle(uint16_t keycode, bool value) {
   show_toggle_extra(keycode, value);
 }
 
-__attribute__((weak)) void show_value_extra(uint16_t keycode, uint16_t value, bool detent) {
+__attribute__((weak)) void show_value_extra(uint16_t keycode, uint8_t value, bool detent) {
 }
 
-void show_value(uint16_t keycode, uint16_t value, bool detent) {
+void show_value(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     PLAY_SONG(detent_song);
   show_value_extra(keycode, value, detent);
@@ -124,15 +124,7 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
 }
 
 
-// OS-specific mode
-
-typedef enum {
-  OS_MODE_WIN,
-  OS_MODE_MAC,
-  OS_MODE_LNX,
-} os_mode_t;
-
-os_mode_t os_mode = OS_MODE_WIN;
+// OS mode
 
 os_mode_t os_mode_get(void) {
   if (keymap_config.swap_lctl_lgui)
@@ -143,33 +135,19 @@ os_mode_t os_mode_get(void) {
     return OS_MODE_WIN;
 }
 
-bool process_os_mode(os_mode_t mode, keyrecord_t *record) {
+bool process_os_mode(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
-  os_mode = mode;
-  
-  if (os_mode == OS_MODE_MAC)
+
+  if (keycode == U_MAC)
     process_magic(QK_MAGIC_SWAP_CTL_GUI, record);
   else
     process_magic(QK_MAGIC_UNSWAP_CTL_GUI, record);
-  
-  user_config.os_mode_linux = (os_mode == OS_MODE_LNX);
+
+  user_config.os_mode_linux = (keycode == U_LNX);
   eeconfig_update_user(user_config.raw);
-  
-  switch(os_mode) {
-    case OS_MODE_WIN:
-      show_os_mode(U_WIN);
-      break;
-    case OS_MODE_MAC:
-      show_os_mode(U_MAC);
-      break;
-    case OS_MODE_LNX:
-      show_os_mode(U_LNX);
-      break;
-    default:
-      break;
-  }
+
+  show_os_mode(keycode);
   return false;
 }
 
@@ -188,7 +166,7 @@ const char* const userkey_lnx =
   " ";
 
 void tap_userkey(void) {
-  // Save and cancel mods.
+  // Save and cancel mods
   const uint8_t saved_mods = get_mods();
   del_mods(MOD_MASK_CSAG);
   del_weak_mods(MOD_MASK_CSAG);
@@ -196,13 +174,14 @@ void tap_userkey(void) {
 
   // Toggle lock keys?
   const led_t saved_led_state = host_keyboard_led_state();
-  // Linux unicode entry requires an uppercase U.
-  // Caps lock interferes.
+  // Linux unicode entry requires an uppercase U
+  // Caps lock interferes
   const bool toggle_caps_lock = saved_led_state.caps_lock;
-  // Windows numpad cp1252 entry requires num-lock.
+  // Windows numpad cp1252 entry requires num-lock
   const bool toggle_num_lock = !saved_led_state.num_lock;
 
-  // Send key presses.
+  // Send key presses
+  const os_mode_t os_mode = os_mode_get();
   switch (os_mode) {
     case OS_MODE_WIN:
       if (toggle_num_lock)
@@ -224,8 +203,8 @@ void tap_userkey(void) {
     default:
       break;
   }
-  
-  // Restore mods.
+
+  // Restore mods
   set_mods(saved_mods);
   send_keyboard_report();
 }
@@ -255,6 +234,7 @@ const uint16_t clipcodes[][CLIP_END] = {
 };
 
 bool process_clipcode(clip_t clip, keyrecord_t *record) {
+  const os_mode_t os_mode = os_mode_get();
   const uint16_t keycode = clipcodes[os_mode][clip];
   if (record->event.pressed)
     register_code16(keycode);
@@ -271,7 +251,7 @@ bool process_clipcode(clip_t clip, keyrecord_t *record) {
 bool process_audio_toggle(keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
+
   const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
   const uint8_t shifted = mods & MOD_MASK_SHIFT;
   if (shifted) {
@@ -279,7 +259,7 @@ bool process_audio_toggle(keyrecord_t *record) {
     // Temporarily enable audio for feedback
     audio_on();
   }
-  
+
   // Show toggle in the on state
   if (audio_is_on()) {
       show_toggle(QK_AUDIO_TOGGLE, false);
@@ -305,8 +285,20 @@ bool process_audio_toggle(keyrecord_t *record) {
 // (A post_process_record_user implementation is simpler, but fails)
 // (The user function is called on keyup but not on keydown following a return-false)
 
-// Return true if stepped value i (qadd8, qsub8) is on detent
-bool slider_on_detent(uint8_t i, uint8_t detent, int8_t step) {
+// Return number of steps (qadd8, qsub8) from zero
+int8_t step_value(uint8_t i, int8_t step) {
+  const uint8_t n = i / step;
+  const uint8_t over = i % step;
+  const uint8_t under = step - over;
+  // Round to the nearest step
+  if (over <= under)
+    return n;
+  else
+    return n + 1;
+}
+
+// Return true if slider value (qadd8, qsub8) is on detent
+bool slider_on_detent(uint8_t value, uint8_t detent, int8_t step) {
   uint8_t lower = detent - (step / 2);
   uint8_t upper = lower + step - 1;
   // Wrap around? floor at 0
@@ -315,13 +307,20 @@ bool slider_on_detent(uint8_t i, uint8_t detent, int8_t step) {
   // Wrap around? cap at 0xFF
   if (upper < detent)
     upper = 255;
-  return (lower <= i && i <= upper);
+  return (lower <= value && value <= upper);
 }
 
-bool process_rgb_toggle(keyrecord_t *record) {
+// Return true if rotator value (qadd8, qsub8) is on detent
+bool rotator_on_detent(uint8_t value, uint8_t detent, int8_t step) {
+  // Transform into a middle-of-the-range test.
+  const uint8_t offset = 128 - detent;
+  return slider_on_detent(value+offset, detent+offset, step);
+}
+
+bool process_rgb_toggle(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
+
   const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
   const uint8_t shifted = mods & MOD_MASK_SHIFT;
   if (shifted) {
@@ -329,7 +328,7 @@ bool process_rgb_toggle(keyrecord_t *record) {
     // Temporarily enable rgb matrix for feedback
     rgb_matrix_enable();
   }
-  
+
   // Show toggle in the on state
   if (rgb_matrix_is_enabled()) {
     show_toggle(RGB_TOG, false);
@@ -341,71 +340,74 @@ bool process_rgb_toggle(keyrecord_t *record) {
   return false;
 }
 
-bool process_rgb_mode(keyrecord_t *record) {
+bool process_rgb_mode(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
+
   const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
   const uint8_t shifted = mods & MOD_MASK_SHIFT;
   if (!shifted)
     rgb_matrix_step();
   else
     rgb_matrix_step_reverse();
-  
+
   const uint8_t mode = rgb_matrix_get_mode();
   const bool detent = (mode == RGB_MATRIX_DEFAULT_MODE);
-  show_value(RGB_MOD, mode, detent);
+  show_value(keycode, mode, detent);
   return false;
 }
 
-bool process_rgb_hue(keyrecord_t *record) {
+bool process_rgb_hue(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
+
   const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
   const uint8_t shifted = mods & MOD_MASK_SHIFT;
   if (!shifted)
     rgb_matrix_increase_hue();
   else
     rgb_matrix_decrease_hue();
-  
+
   const uint8_t hue = rgb_matrix_get_hue();
-  const bool detent = (hue == RGB_MATRIX_DEFAULT_HUE);
-  show_value(RGB_HUI, hue, detent);
+  const uint8_t value = step_value(hue, RGB_MATRIX_HUE_STEP);
+  const bool detent = rotator_on_detent(hue, RGB_MATRIX_DEFAULT_HUE, RGB_MATRIX_HUE_STEP);
+  show_value(keycode, value, detent);
   return false;
 }
 
-bool process_rgb_sat(keyrecord_t *record) {
+bool process_rgb_sat(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
+
   const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
   const uint8_t shifted = mods & MOD_MASK_SHIFT;
   if (!shifted)
     rgb_matrix_increase_sat();
   else
     rgb_matrix_decrease_sat();
-  
+
   const uint8_t sat = rgb_matrix_get_sat();
+  const uint8_t value = step_value(sat, RGB_MATRIX_SAT_STEP);
   const bool detent = slider_on_detent(sat, RGB_MATRIX_DEFAULT_SAT, RGB_MATRIX_SAT_STEP);
-  show_value(RGB_SAI, sat, detent);
+  show_value(keycode, value, detent);
   return false;
 }
 
-bool process_rgb_val(keyrecord_t *record) {
+bool process_rgb_val(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
-  
+
   const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
   const uint8_t shifted = mods & MOD_MASK_SHIFT;
   if (!shifted)
     rgb_matrix_increase_val();
   else
     rgb_matrix_decrease_val();
-  
+
   const uint8_t val = rgb_matrix_get_val();
+  const uint8_t value = step_value(val, RGB_MATRIX_VAL_STEP);
   const bool detent = slider_on_detent(val, RGB_MATRIX_DEFAULT_VAL, RGB_MATRIX_VAL_STEP);
-  show_value(RGB_VAI, val, detent);
+  show_value(keycode, value, detent);
   return false;
 }
 
@@ -416,12 +418,12 @@ bool process_rgb_val(keyrecord_t *record) {
 
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
-    // Continue Caps Word, with shift.
+    // Continue Caps Word, with shift
     case KC_A ... KC_Z:
         add_weak_mods(MOD_BIT(KC_LSFT));
         return true;
-  
-    // Continue Caps Word, no shift.
+
+    // Continue Caps Word, no shift
     case KC_1 ... KC_0:
     case KC_BSPC:
     case KC_DEL:
@@ -429,7 +431,7 @@ bool caps_word_press_user(uint16_t keycode) {
     case KC_UNDS:
         return true;
 
-    // End Caps Word.
+    // End Caps Word
     default:
         return false;
   }
@@ -463,9 +465,9 @@ bool nine_shift_action(bool key_down, void *context) {
 const key_override_t capsword_shift_override = ko_make_basic(MOD_MASK_SHIFT, CW_TOGG, KC_CAPS);
 const key_override_t nine_shift_override = ko_make_with_action_and_layers(MOD_MASK_SHIFT, KC_9, nine_shift_action, LAYER_MASK_NUM);
 const key_override_t dot_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_DOT, KC_LEFT_PAREN, LAYER_MASK_NUM);
-// The following key overrides give auto-repeat consistency to the left-hand thumb keys.
-// Without the key override these shifted keys tap (because of auto-shift).
-// With the key override these shifted keys press/release (like the dot-key override).
+// The following key overrides give auto-repeat consistency to the left-hand thumb keys
+// Without the key override these shifted keys tap (because of auto-shift)
+// With the key override these shifted keys press/release (like the dot-key override)
 const key_override_t zero_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_0, KC_RIGHT_PAREN, LAYER_MASK_NUM);
 const key_override_t minus_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_MINUS, KC_UNDERSCORE, LAYER_MASK_NUM);
 const key_override_t* const custom_overrides[] = {
@@ -533,7 +535,7 @@ void autoshift_release_user(uint16_t keycode, bool shifted, keyrecord_t *record)
 
   // & 0xFF gets the Tap key for Tap Holds, required when using Retro Shift
   // The IS_RETRO check isn't really necessary here, always using
-  // keycode & 0xFF would be fine.
+  // keycode & 0xFF would be fine
   unregister_code16((IS_RETRO(keycode)) ? keycode & 0xFF : keycode);
 }
 
@@ -547,16 +549,16 @@ __attribute__((weak)) bool process_record_extra(uint16_t keycode, keyrecord_t *r
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   if (!process_record_extra(keycode, record))
     return false;
-  
+
   switch (keycode) {
     case U_USER:
       return process_userkey(keycode, record);
     case U_WIN:
-      return process_os_mode(OS_MODE_WIN, record);
+      return process_os_mode(keycode, record);
     case U_MAC:
-      return process_os_mode(OS_MODE_MAC, record);
+      return process_os_mode(keycode, record);
     case U_LNX:
-      return process_os_mode(OS_MODE_LNX, record);
+      return process_os_mode(keycode, record);
     case U_CUT:
       return process_clipcode(CLIP_CUT, record);
     case U_CPY:
@@ -569,15 +571,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       return process_clipcode(CLIP_RDO, record);
 #ifdef RGB_MATRIX_ENABLE
     case U_RGB_TOG:
-      return process_rgb_toggle(record);
+      return process_rgb_toggle(keycode, record);
     case U_RGB_MOD:
-      return process_rgb_mode(record);
+      return process_rgb_mode(keycode, record);
     case U_RGB_HUI:
-      return process_rgb_hue(record);
+      return process_rgb_hue(keycode, record);
     case U_RGB_SAI:
-      return process_rgb_sat(record);
+      return process_rgb_sat(keycode, record);
     case U_RGB_VAI:
-      return process_rgb_val(record);
+      return process_rgb_val(keycode, record);
 #endif
 #ifdef AUDIO_ENABLE
     case U_AUD_TOG:
@@ -650,13 +652,16 @@ void eeconfig_init_user(void) {
   // Windows mode by default
   // keymap_config.swap_lctl_lgui defaults to false
   user_config.os_mode_linux = false;
-  
+
   eeconfig_update_user(user_config.raw);
   eeconfig_init_extra();
+}
+
+__attribute__((weak)) void keyboard_post_init_extra(void) {
 }
 
 void keyboard_post_init_user(void) {
   // Restore user state
   user_config.raw = eeconfig_read_user();
-  os_mode = os_mode_get();
+  keyboard_post_init_extra();
 }

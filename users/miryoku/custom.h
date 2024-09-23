@@ -22,3 +22,14 @@ enum my_keycodes {
   U_RGB_VAI,
   U_AUD_TOG,
 };
+
+
+// OS mode
+
+typedef enum {
+  OS_MODE_WIN,
+  OS_MODE_MAC,
+  OS_MODE_LNX,
+} os_mode_t;
+
+os_mode_t os_mode_get(void);
