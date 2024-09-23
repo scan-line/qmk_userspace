@@ -322,9 +322,6 @@ const uint8_t default_layer_flash[] = {1, 1, 1, 0};
 const uint8_t toggle_on_flash[] = {10, 0};
 const uint8_t detent_flash[] = {1, 0};
 
-// "User" matrix mode
-uint8_t user_matrix_mode = RGB_MATRIX_SOLID_COLOR;
-
 void show_os_mode_extra(uint16_t keycode) {
   flash_led(os_mode_flash);
 }
@@ -379,30 +376,27 @@ void show_layer_extra(uint8_t layer) {
   }
 }
 
-uint8_t base_matrix_mode(void) {
-  switch (default_layer) {
-    case U_NAV:
-    case U_MOUSE:
-    case U_MEDIA:
-    case U_NUM:
-    case U_SYM:
-    case U_FUN:
-      // Use a single-color matrix
-      // so that animations restart correctly
-      // on return to "user" matrix mode
-      return RGB_MATRIX_SOLID_COLOR;
-    default:
-      // "User" matrix mode
-      return user_matrix_mode;
-  }
-}
-
 void show_default_layer_extra(uint8_t layer) {
   flash_led(default_layer_flash);
   default_layer = layer;
-  // Layer-lock display?
-  const uint8_t matrix_mode = base_matrix_mode();
-  rgb_matrix_mode_noeeprom(matrix_mode);
+
+  switch (layer) {
+    case U_NAV:
+    case U_MOUSE:
+    case U_NUM:
+    case U_SYM:
+    case U_FUN:
+    case U_MEDIA:
+      // Overlay matrix
+      break;
+    default:
+      // Restart matrix to remove overlay
+      if (!rgb_matrix_get_suspend_state()) {
+        rgb_matrix_set_suspend_state(true);
+        rgb_matrix_set_suspend_state(false);
+      }
+      break;
+  }
 }
 
 void show_toggle_extra(uint16_t keycode, bool value) {
@@ -419,22 +413,6 @@ void show_value_extra(uint16_t keycode, uint8_t value, bool detent) {
     flash_led(cancel_flash);
 
   set_slider(value);
-
-  if (keycode == U_RGB_MOD) {
-    // "User" matrix mode has changed
-    user_matrix_mode = rgb_matrix_get_mode();
-    // Return to layer-lock display?
-    const uint8_t matrix_mode = base_matrix_mode();
-    rgb_matrix_mode_noeeprom(matrix_mode);
-  }
-}
-
-bool process_record_extra(uint16_t keycode, keyrecord_t *record) {
-  if (keycode == U_RGB_MOD && record->event.pressed) {
-    // Prepare to change the "user" matrix mode
-    rgb_matrix_mode_noeeprom(user_matrix_mode);
-  }
-  return true;
 }
 
 
@@ -444,9 +422,4 @@ void eeconfig_init_extra(void) {
   // Turn the initial led level down from 4 to 1
   keyboard_config.led_level = 1;
   eeconfig_update_kb(keyboard_config.raw);
-}
-
-void keyboard_post_init_extra(void) {
-  // Track matrix mode
-  user_matrix_mode = rgb_matrix_get_mode();
 }
