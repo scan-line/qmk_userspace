@@ -15,32 +15,26 @@
 typedef struct leds_t {
   bool left;
   bool right;
+  bool flash;
+  const uint8_t* pattern;
+  deferred_token token;
   bool suspended;
 } leds_t;
 
-typedef struct leds_flash_t {
-  const uint8_t* pattern;
-  bool on;
-  deferred_token token;
-} leds_flash_t;
+const uint8_t no_flash[] = {0};
 
 leds_t leds = (const leds_t){
   .left = false,
   .right = false,
-  .suspended = false
-};
-
-const uint8_t cancel_flash[] = {0};
-
-leds_flash_t leds_flash = (const leds_flash_t){
-  .pattern = cancel_flash,
-  .on = false,
-  .token = INVALID_DEFERRED_TOKEN
+  .flash = false,
+  .pattern = no_flash,
+  .token = INVALID_DEFERRED_TOKEN,
+  .suspended = false,
 };
 
 void update_leds(void) {
-  const bool left_on = (leds.left || leds_flash.on) && !leds.suspended;
-  const bool right_on = (leds.right || leds_flash.on) && !leds.suspended;
+  const bool left_on = (leds.left || leds.flash) && !leds.suspended;
+  const bool right_on = (leds.right || leds.flash) && !leds.suspended;
 
   if (left_on)
     planck_ez_left_led_on();
@@ -53,43 +47,43 @@ void update_leds(void) {
     planck_ez_right_led_off();
 }
 
-uint8_t next_flash_leds(void) {
-  const uint8_t duration = *leds_flash.pattern * FLASH_LED_TICK;
+uint8_t flash_leds_next(void) {
+  const uint8_t duration = *leds.pattern * FLASH_LED_TICK;
 
   if (duration > 0) {
-    leds_flash.on = !leds_flash.on;
-    ++leds_flash.pattern;
+    leds.flash = !leds.flash;
+    ++leds.pattern;
   } else {
     // End of array
-    leds_flash.on = false;
-    leds_flash.token = INVALID_DEFERRED_TOKEN;
+    leds.flash = false;
+    leds.token = INVALID_DEFERRED_TOKEN;
   }
 
   update_leds();
   return duration;
 }
 
-uint32_t flash_led_callback(uint32_t trigger_time, void *arg) {
+uint32_t flash_leds_callback(uint32_t trigger_time, void *arg) {
   // Next state
-  const uint8_t duration = next_flash_leds();
+  const uint8_t duration = flash_leds_next();
   return duration;
 }
 
-void flash_led(const uint8_t* pattern) {
+void flash_leds(const uint8_t* pattern) {
   // Cancel any current flash
-  if (leds_flash.token != INVALID_DEFERRED_TOKEN) {
-    cancel_deferred_exec(leds_flash.token);
-    leds_flash.on = false;
-    leds_flash.token = INVALID_DEFERRED_TOKEN;
+  if (leds.token != INVALID_DEFERRED_TOKEN) {
+    cancel_deferred_exec(leds.token);
+    leds.flash = false;
+    leds.token = INVALID_DEFERRED_TOKEN;
     update_leds();
   }
 
   // Start new flash
-  leds_flash.pattern = pattern;
-  leds_flash.on = false;
-  const uint8_t duration = next_flash_leds();
+  leds.flash = false;
+  leds.pattern = pattern;
+  const uint8_t duration = flash_leds_next();
   if (duration > 0)
-    leds_flash.token = defer_exec(duration, flash_led_callback, NULL);
+    leds.token = defer_exec(duration, flash_leds_callback, NULL);
 }
 
 void suspend_power_down_extra(void) {
@@ -108,16 +102,18 @@ void suspend_wakeup_init_extra(void) {
 
 typedef struct slider_t {
   uint8_t value;
+  bool active;
   deferred_token token;
 } slider_t;
 
 slider_t slider = (const slider_t){
   .value = 0,
+  .active = false,
   .token = INVALID_DEFERRED_TOKEN,
 };
 
-uint32_t slider_cancel_callback(uint32_t trigger_time, void *arg) {
-  slider.value = 0;
+uint32_t slider_end_callback(uint32_t trigger_time, void *arg) {
+  slider.active = false;
   slider.token = INVALID_DEFERRED_TOKEN;
   return 0;
 }
@@ -126,25 +122,35 @@ void set_slider(uint8_t value) {
   // Cancel any current slider
   if (slider.token != INVALID_DEFERRED_TOKEN) {
     cancel_deferred_exec(slider.token);
-    slider.value = 0;
+    slider.active = false;
     slider.token = INVALID_DEFERRED_TOKEN;
   }
 
   // Start new slider
   slider.value = value;
-  slider.token = defer_exec(FEEDBACK_TIMEOUT, slider_cancel_callback, NULL);
+  slider.active = true;
+  slider.token = defer_exec(FEEDBACK_TIMEOUT, slider_end_callback, NULL);
 }
 
 
 // Layer lock display
 
+uint8_t default_layer = U_BASE;
+
 // Planck mit led pattern is
 //  0  1  2  3  4  5   6  7  8  9 10 11
 // 12 13 14 15 16 17  18 19 20 21 22 23
 // 24 25 26 27 28 29  30 31 32 33 34 35
-// 36 37 38 39 40   41   42 43 44 45 46   
+// 36 37 38 39 40   41   42 43 44 45 46
 
-uint8_t default_layer = U_BASE;
+const uint8_t led_grid[][10] = {
+  { 0,  1,  2,  3,  4,    7,  8,  9, 10, 11},
+  {12, 13, 14, 15, 16,   19, 20, 21, 22, 23},
+  {24, 25, 26, 27, 28,   31, 32, 33, 34, 35},
+};
+const uint8_t led_thumb[] = {
+           38, 39, 40,   42, 43, 44
+};
 
 RGB scaled_hsv_to_rgb(uint8_t scale, uint8_t h, uint8_t s, uint8_t v) {
   const HSV hsv = (HSV){
@@ -184,26 +190,26 @@ void display_layer(uint8_t layer) {
     case U_MEDIA:
       // Accent the "cursor" keys
       rgb_matrix_set_color_all(0, 0, 0);
-      rgb_matrix_set_color(20, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(21, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(22, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(23, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][6], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][7], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][8], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][9], rgb.r, rgb.g, rgb.b);
       break;
     case U_NUM:
     case U_SYM:
     case U_FUN:
       // Accent the "numpad" keys
       rgb_matrix_set_color_all(0, 0, 0);
-      rgb_matrix_set_color(1, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(2, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(3, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(13, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(14, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(15, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(25, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(26, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(27, rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(39, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[0][1], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[0][2], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[0][3], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][1], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][2], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[1][3], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[2][1], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[2][2], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_grid[2][3], rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
       break;
     default:
       // Standard animation
@@ -213,23 +219,23 @@ void display_layer(uint8_t layer) {
   // Accent the thumb key
   switch (layer) {
     case U_NAV:
-      rgb_matrix_set_color(39, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
       break;
     case U_MOUSE:
-      rgb_matrix_set_color(40, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[2], rgb.r, rgb.g, rgb.b);
       break;
     case U_MEDIA:
-      rgb_matrix_set_color(38, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[0], rgb.r, rgb.g, rgb.b);
       break;
       break;
     case U_NUM:
-      rgb_matrix_set_color(43, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[4], rgb.r, rgb.g, rgb.b);
       break;
     case U_SYM:
-      rgb_matrix_set_color(42, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[3], rgb.r, rgb.g, rgb.b);
       break;
     case U_FUN:
-      rgb_matrix_set_color(44, rgb.r, rgb.g, rgb.b);
+      rgb_matrix_set_color(led_thumb[5], rgb.r, rgb.g, rgb.b);
       break;
     default:
       break;
@@ -244,30 +250,40 @@ void display_settings(void) {
   switch (os_mode_get())
   {
     case OS_MODE_WIN:
-      rgb_matrix_set_color(32, on.r, on.g, on.b);
+      rgb_matrix_set_color(led_grid[2][6], on.r, on.g, on.b);
       break;
     case OS_MODE_MAC:
-      rgb_matrix_set_color(33, on.r, on.g, on.b);
+      rgb_matrix_set_color(led_grid[2][7], on.r, on.g, on.b);
       break;
     case OS_MODE_LNX:
-      rgb_matrix_set_color(34, on.r, on.g, on.b);
+      rgb_matrix_set_color(led_grid[2][8], on.r, on.g, on.b);
       break;
     default:
       break;
   }
 
   if (rgb_matrix_is_enabled())
-    rgb_matrix_set_color(7, on.r, on.g, on.b);
+    rgb_matrix_set_color(led_grid[0][5], on.r, on.g, on.b);
   else
-    rgb_matrix_set_color(7, off.r, off.g, off.b);
+    rgb_matrix_set_color(led_grid[0][5], off.r, off.g, off.b);
 
   if (is_audio_on())
-    rgb_matrix_set_color(19, on.r, on.g, on.b);
+    rgb_matrix_set_color(led_grid[1][5], on.r, on.g, on.b);
   else
-    rgb_matrix_set_color(19, off.r, off.g, off.b);
+    rgb_matrix_set_color(led_grid[1][5], off.r, off.g, off.b);
+
+  const HSV hsv = rgb_matrix_get_hsv();
+  const RGB rgb = hsv_to_rgb(hsv);
+  rgb_matrix_set_color(led_grid[0][7], rgb.r, rgb.g, rgb.b);
+  rgb_matrix_set_color(led_grid[0][8], rgb.r, rgb.g, rgb.b);
+  rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
+
 }
 
 void display_slider(void) {
+  if (!slider.active)
+    return;
+
   // Display bits in binary
   const uint8_t val = rgb_matrix_get_val();
   const RGB on = scaled_hsv_to_rgb(val, HSV_YELLOW);
@@ -277,19 +293,17 @@ void display_slider(void) {
   // Five bits is enough
   for (int i = 0; i < 5; i++) {
     if (bits & mask)
-      rgb_matrix_set_color(i, on.r, on.g, on.b);
+      rgb_matrix_set_color(led_grid[0][i], on.r, on.g, on.b);
     else
-      rgb_matrix_set_color(i, 0, 0, 0);
+      rgb_matrix_set_color(led_grid[0][i], 0, 0, 0);
     bits >>= 1;
   }
-}
 
-void display_hsv_color(void) {
   // Display a block of hsv color below the slider
   const HSV hsv = rgb_matrix_get_hsv();
   const RGB rgb = hsv_to_rgb(hsv);
-  for (int i = 12; i < 17; i++) {
-    rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+  for (int i = 0; i < 5; i++) {
+    rgb_matrix_set_color(led_grid[1][i], rgb.r, rgb.g, rgb.b);
   }
 }
 
@@ -306,7 +320,6 @@ bool rgb_matrix_indicators_user(void) {
       display_layer(default_layer);
       display_settings();
       display_slider();
-      display_hsv_color();
       return false;
     default:
       return true;
@@ -323,7 +336,7 @@ const uint8_t toggle_on_flash[] = {10, 0};
 const uint8_t detent_flash[] = {1, 0};
 
 void show_os_mode_extra(uint16_t keycode) {
-  flash_led(os_mode_flash);
+  flash_leds(os_mode_flash);
 }
 
 void show_layer_extra(uint8_t layer) {
@@ -377,7 +390,7 @@ void show_layer_extra(uint8_t layer) {
 }
 
 void show_default_layer_extra(uint8_t layer) {
-  flash_led(default_layer_flash);
+  flash_leds(default_layer_flash);
   default_layer = layer;
 
   switch (layer) {
@@ -401,16 +414,16 @@ void show_default_layer_extra(uint8_t layer) {
 
 void show_toggle_extra(uint16_t keycode, bool value) {
   if (value)
-    flash_led(toggle_on_flash);
+    flash_leds(toggle_on_flash);
   else
-    flash_led(cancel_flash);
+    flash_leds(no_flash);
 }
 
 void show_value_extra(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
-    flash_led(detent_flash);
+    flash_leds(detent_flash);
   else
-    flash_led(cancel_flash);
+    flash_leds(no_flash);
 
   set_slider(value);
 }
