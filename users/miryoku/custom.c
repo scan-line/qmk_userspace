@@ -7,6 +7,7 @@
 
 #include "miryoku.h"
 #include "custom.h"
+#include "custom_rgb.h"
 #include "process_magic.h"
 
 
@@ -71,11 +72,12 @@ void show_os_mode(uint16_t keycode) {
   show_os_mode_extra(keycode);
 }
 
-__attribute__((weak)) void show_layer_extra(uint8_t layer) {
+__attribute__((weak)) void show_layer_extra(uint8_t layer, uint8_t default_layer) {
 }
 
-void show_layer(uint8_t layer) {
-  show_layer_extra(layer);
+void show_layer(uint8_t layer, uint8_t default_layer) {
+  clear_slider();
+  show_layer_extra(layer, default_layer);
 }
 
 __attribute__((weak)) void show_default_layer_extra(uint8_t layer) {
@@ -83,6 +85,7 @@ __attribute__((weak)) void show_default_layer_extra(uint8_t layer) {
 
 void show_default_layer(uint8_t layer) {
   PLAY_SONG(layer_set_song);
+  clear_overlay();
   show_default_layer_extra(layer);
 }
 
@@ -103,6 +106,7 @@ __attribute__((weak)) void show_value_extra(uint16_t keycode, uint8_t value, boo
 void show_value(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     PLAY_SONG(detent_song);
+  set_slider(value);
   show_value_extra(keycode, value, detent);
 }
 
@@ -111,7 +115,8 @@ void show_value(uint16_t keycode, uint8_t value, bool detent) {
 
 layer_state_t layer_state_set_user(layer_state_t state) {
   const uint8_t layer = get_highest_layer(state|default_layer_state);
-  show_layer(layer);
+  const uint8_t default_layer = get_highest_layer(default_layer_state);
+  show_layer(layer, default_layer);
   return state;
 }
 
@@ -119,7 +124,7 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
   const uint8_t default_layer = get_highest_layer(state);
   show_default_layer(default_layer);
   const uint8_t layer = get_highest_layer(state|layer_state);
-  show_layer(layer);
+  show_layer(layer, default_layer);
   return state;
 }
 

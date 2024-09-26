@@ -16,6 +16,28 @@
 #endif
 
 
+// Layer rgb
+
+
+// Corrne 3x6_3 led pattern is
+// split left
+// 24 23 18 17 10  9    36 37 44 45 50 51
+// 25 22 19 16 11  8    35 38 43 46 49 52
+// 26 21 20 15 12  7    34 39 42 47 48 53
+//          14 13  6    33 40 41
+          
+ 
+// TODO
+const uint8_t led_grid[3][10] = {
+  {23, 18, 17, 10,  9,   36, 37, 44, 45, 50},
+  {22, 19, 16, 11,  8,   35, 38, 43, 46, 49},
+  {21, 20, 15, 12,  7,   34, 39, 42, 47, 48},
+};
+const uint8_t led_thumb[6] = {
+           14, 13,  6,   33, 40, 41
+};
+
+
 // Luna, keyboard pet
 // https://github.com/HellSingCoder/qmk_firmware/blob/master/keyboards/sofle/keymaps/helltm/keymap.c
 
