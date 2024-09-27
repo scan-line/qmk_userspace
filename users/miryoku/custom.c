@@ -103,10 +103,10 @@ void show_toggle(uint16_t keycode, bool value) {
   show_toggle_extra(keycode, value);
 }
 
-__attribute__((weak)) void show_value_extra(uint16_t keycode, uint16_t value, bool detent) {
+__attribute__((weak)) void show_value_extra(uint16_t keycode, uint8_t value, bool detent) {
 }
 
-void show_value(uint16_t keycode, uint16_t value, bool detent) {
+void show_value(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     PLAY_SONG(detent_song);
   show_value_extra(keycode, value, detent);
