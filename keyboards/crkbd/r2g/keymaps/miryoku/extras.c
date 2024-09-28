@@ -272,7 +272,7 @@ void show_toggle_extra(uint16_t keycode, bool value) {
     flash_message(PSTR("[ ]"));
 }
 
-void show_value_extra(uint16_t keycode, uint16_t value, bool detent) {
+void show_value_extra(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     flash_message(PSTR("-=-"));
   else
@@ -335,50 +335,50 @@ bool process_record_extra(uint16_t keycode, keyrecord_t *record) {
 
 // Default implementation, cut down to swap ctl-gui.
 uint16_t keycode_config(uint16_t keycode) {
-    switch (keycode) {
-        case KC_LEFT_CTRL:
-            if (keymap_config.swap_lctl_lgui) {
-                return KC_LEFT_GUI;
-            }
-            return KC_LEFT_CTRL;
-        case KC_LEFT_GUI:
-            if (keymap_config.swap_lctl_lgui) {
-                return KC_LEFT_CTRL;
-            }
-            return KC_LEFT_GUI;
-        case KC_RIGHT_CTRL:
-            if (keymap_config.swap_rctl_rgui) {
-                return KC_RIGHT_GUI;
-            }
-            return KC_RIGHT_CTRL;
-        case KC_RIGHT_GUI:
-            if (keymap_config.swap_rctl_rgui) {
-                return KC_RIGHT_CTRL;
-            }
-            return KC_RIGHT_GUI;
-        default:
-            return keycode;
-    }
+  switch (keycode) {
+    case KC_LEFT_CTRL:
+      if (keymap_config.swap_lctl_lgui) {
+        return KC_LEFT_GUI;
+      }
+      return KC_LEFT_CTRL;
+    case KC_LEFT_GUI:
+      if (keymap_config.swap_lctl_lgui) {
+        return KC_LEFT_CTRL;
+      }
+      return KC_LEFT_GUI;
+    case KC_RIGHT_CTRL:
+      if (keymap_config.swap_rctl_rgui) {
+        return KC_RIGHT_GUI;
+      }
+      return KC_RIGHT_CTRL;
+    case KC_RIGHT_GUI:
+      if (keymap_config.swap_rctl_rgui) {
+        return KC_RIGHT_CTRL;
+      }
+      return KC_RIGHT_GUI;
+    default:
+      return keycode;
+  }
 }
 
 // Default implementation, cut down to swap ctl-gui.
 uint8_t mod_config(uint8_t mod) {
-    /**
-     * Note: This function is for the 5-bit packed mods, NOT the full 8-bit mods.
-     * More info about the mods can be seen in modifiers.h.
-     */
-    if (keymap_config.swap_lctl_lgui) {
-        /* left mods ANDed with right-hand values to check for right hand bit */
-        if (((mod & MOD_RCTL) == MOD_LCTL) ^ ((mod & MOD_RGUI) == MOD_LGUI)) {
-            mod ^= (MOD_LCTL | MOD_LGUI);
-        }
+  /**
+   * Note: This function is for the 5-bit packed mods, NOT the full 8-bit mods.
+   * More info about the mods can be seen in modifiers.h.
+   */
+  if (keymap_config.swap_lctl_lgui) {
+    /* left mods ANDed with right-hand values to check for right hand bit */
+    if (((mod & MOD_RCTL) == MOD_LCTL) ^ ((mod & MOD_RGUI) == MOD_LGUI)) {
+      mod ^= (MOD_LCTL | MOD_LGUI);
     }
-    if (keymap_config.swap_rctl_rgui) {
-        if (((mod & MOD_RCTL) == MOD_RCTL) ^ ((mod & MOD_RGUI) == MOD_RGUI)) {
-            /* lefthand values to preserve the right hand bit */
-            mod ^= (MOD_LCTL | MOD_LGUI);
-        }
+  }
+  if (keymap_config.swap_rctl_rgui) {
+    if (((mod & MOD_RCTL) == MOD_RCTL) ^ ((mod & MOD_RGUI) == MOD_RGUI)) {
+      /* lefthand values to preserve the right hand bit */
+      mod ^= (MOD_LCTL | MOD_LGUI);
     }
+  }
 
-    return mod;
+  return mod;
 }
