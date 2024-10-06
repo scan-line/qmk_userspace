@@ -257,6 +257,7 @@ void overlay_slider(void) {
 bool rgb_matrix_indicators_user(void) {
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
+    case U_BUTTON:
     case U_NAV:
     case U_MOUSE:
     case U_NUM:
@@ -287,8 +288,24 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
   if (params->init) {
-    // Start without a slider (from rgb mode change)
-    clear_slider();
+    const uint8_t default_layer = get_highest_layer(default_layer_state);
+    switch (default_layer) {
+      case U_BUTTON:
+      case U_NAV:
+      case U_MOUSE:
+      case U_NUM:
+      case U_SYM:
+      case U_FUN:
+      case U_MEDIA:
+        // Start with overlay
+        // Leave any overlay slider
+        break;
+      default:
+        // Start without overlay.
+        // Start clean
+        clear_slider();
+        break;
+    }
   }
 
   rgb_matrix_set_color_all(0, 0, 0);

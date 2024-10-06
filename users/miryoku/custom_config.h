@@ -67,6 +67,8 @@ U_NP,              U_NP,              KC_LPRN,           KC_RPRN,           KC_U
 #define RGB_MATRIX_VAL_STEP 16
 #define RGB_MATRIX_SPD_STEP 16
 #define RGB_MATRIX_TIMEOUT 900000
+#define RGB_MATRIX_FRAMEBUFFER_EFFECTS
+#define RGB_MATRIX_KEYPRESSES
 
 #define RGB_MATRIX_SLEEP
 

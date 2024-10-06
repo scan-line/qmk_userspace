@@ -7,6 +7,7 @@
 #define ENABLE_RGB_MATRIX_ALPHAS_MODS
 #define ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN
 #define ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT
+#define ENABLE_RGB_MATRIX_FEEDBACK
 #define ENABLE_RGB_MATRIX_HUE_BREATHING
 #define ENABLE_RGB_MATRIX_SLOWDROPS
 #define ENABLE_RGB_MATRIX_PIXEL_RAIN
@@ -15,7 +16,6 @@
 #define ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS
 #define ENABLE_RGB_MATRIX_MULTISPLASH
 #define ENABLE_RGB_MATRIX_TYPING_HEATMAP
-#define ENABLE_RGB_MATRIX_FEEDBACK
 
 // Matrix off is always enum 0
 // Matrix solid color is always enum 1
@@ -23,6 +23,7 @@
 #include "alpha_mods_anim.h"
 #include "gradient_up_down_anim.h"
 #include "gradient_left_right_anim.h"
+#include "feedback_anim.h"
 #include "hue_breathing_anim.h"
 #include "slowdrops_anim.h"
 #include "pixel_rain_anim.h"
@@ -31,12 +32,12 @@
 #include "solid_reactive_nexus.h"
 #include "splash_anim.h"
 #include "typing_heatmap_anim.h"
-#include "feedback_anim.h"
 
 #undef ENABLE_RGB_MATRIX_SOLID_COLOR
 #undef ENABLE_RGB_MATRIX_ALPHAS_MODS
 #undef ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN
 #undef ENABLE_RGB_MATRIX_GRADIENT_LEFT_RIGHT
+#undef ENABLE_RGB_MATRIX_FEEDBACK
 #undef ENABLE_RGB_MATRIX_HUE_BREATHING
 #undef ENABLE_RGB_MATRIX_SLOWDROPS
 #undef ENABLE_RGB_MATRIX_PIXEL_RAIN
@@ -45,4 +46,3 @@
 #undef ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS
 #undef ENABLE_RGB_MATRIX_MULTISPLASH
 #undef ENABLE_RGB_MATRIX_TYPING_HEATMAP
-#undef ENABLE_RGB_MATRIX_FEEDBACK
