@@ -10,7 +10,7 @@
 
 #ifdef RGB_MATRIX_ENABLE
 
-void set_slider(uint8_t value);
+void set_slider(uint8_t value, bool detent);
 void clear_slider(void);
 
 void clear_overlay(void);

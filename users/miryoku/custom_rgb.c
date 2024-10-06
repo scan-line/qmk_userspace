@@ -16,12 +16,14 @@
 
 typedef struct slider_t {
   uint8_t value;
+  bool detent;
   bool active;
   deferred_token token;
 } slider_t;
 
 slider_t slider = (const slider_t){
   .value = 0,
+  .detent = false,
   .active = false,
   .token = INVALID_DEFERRED_TOKEN,
 };
@@ -32,11 +34,12 @@ uint32_t slider_end_callback(uint32_t trigger_time, void *arg) {
   return 0;
 }
 
-void set_slider(uint8_t value) {
+void set_slider(uint8_t value, bool detent) {
   // Clear any current slider
   clear_slider();
   // Start new slider
   slider.value = value;
+  slider.detent = detent;
   slider.active = true;
   slider.token = defer_exec(FEEDBACK_TIMEOUT, slider_end_callback, NULL);
 }
@@ -233,14 +236,15 @@ void overlay_slider(void) {
 
   // Display bits in binary
   const uint8_t val = rgb_matrix_get_val();
-  const RGB on = scaled_hsv_to_rgb(val, HSV_YELLOW);
+  const RGB bit = scaled_hsv_to_rgb(val, HSV_YELLOW);
+  const RGB on = scaled_hsv_to_rgb(val, HSV_GREEN);
 
   uint8_t bits = slider.value;
   const uint8_t mask = 1;
   // Five bits is enough
   for (int i = 0; i < 5; i++) {
     if (bits & mask)
-      rgb_matrix_set_color(led_grid[0][i], on.r, on.g, on.b);
+      rgb_matrix_set_color(led_grid[0][i], bit.r, bit.g, bit.b);
     else
       rgb_matrix_set_color(led_grid[0][i], 0, 0, 0);
     bits >>= 1;
@@ -252,6 +256,12 @@ void overlay_slider(void) {
   for (int i = 0; i < 5; i++) {
     rgb_matrix_set_color(led_grid[1][i], rgb.r, rgb.g, rgb.b);
   }
+
+  // Display detent match
+  if (slider.detent)
+    rgb_matrix_set_color(led_grid[2][4], on.r, on.g, on.b);
+  else
+    rgb_matrix_set_color(led_grid[2][4], 0, 0, 0);
 }
 
 bool rgb_matrix_indicators_user(void) {
@@ -321,7 +331,7 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
 
 // No RGB_MATRIX_ENABLE
 
-void set_slider(uint8_t value) {
+void set_slider(uint8_t value, bool detent) {
 }
 
 void clear_slider(void) {

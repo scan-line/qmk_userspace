@@ -106,7 +106,7 @@ __attribute__((weak)) void show_value_extra(uint16_t keycode, uint8_t value, boo
 void show_value(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     PLAY_SONG(detent_song);
-  set_slider(value);
+  set_slider(value, detent);
   show_value_extra(keycode, value, detent);
 }
 
