@@ -10,24 +10,22 @@
 
 // "Tooth" led management
 
-#define FLASH_LED_TICK 100
-
 typedef struct leds_t {
   bool left;
   bool right;
   bool flash;
-  const uint8_t* pattern;
+  const uint16_t* pattern;
   deferred_token token;
   bool suspended;
 } leds_t;
 
-const uint8_t no_flash[] = {0};
+const uint16_t flash_off_pattern[] = {0};
 
 leds_t leds = (const leds_t){
   .left = false,
   .right = false,
   .flash = false,
-  .pattern = no_flash,
+  .pattern = flash_off_pattern,
   .token = INVALID_DEFERRED_TOKEN,
   .suspended = false,
 };
@@ -47,8 +45,8 @@ void update_leds(void) {
     planck_ez_right_led_off();
 }
 
-uint8_t flash_leds_next(void) {
-  const uint8_t duration = *leds.pattern * FLASH_LED_TICK;
+uint16_t flash_leds_next(void) {
+  const uint16_t duration = *leds.pattern;
 
   if (duration > 0) {
     leds.flash = !leds.flash;
@@ -75,17 +73,16 @@ void flash_leds_cancel(void) {
 
 uint32_t flash_leds_callback(uint32_t trigger_time, void *arg) {
   // Next state
-  const uint8_t duration = flash_leds_next();
-  return duration;
+  return flash_leds_next();
 }
 
-void flash_leds(const uint8_t* pattern) {
+void flash_leds(const uint16_t* pattern) {
   // Cancel any current flash
   flash_leds_cancel();
   // Start new flash
   leds.flash = false;
   leds.pattern = pattern;
-  const uint8_t duration = flash_leds_next();
+  const uint16_t duration = flash_leds_next();
   if (duration > 0)
     leds.token = defer_exec(duration, flash_leds_callback, NULL);
 }
@@ -122,14 +119,14 @@ const uint8_t led_thumb[6] = {
 
 // Feedback
 
-// On/off timings - must end in 0
-const uint8_t os_mode_flash[] = {10, 0};
-const uint8_t default_layer_flash[] = {1, 1, 1, 0};
-const uint8_t toggle_on_flash[] = {10, 0};
-const uint8_t detent_flash[] = {1, 0};
+// Flash on/off timings in milliseconds
+// Must end in 0
+const uint16_t flash_value_on_pattern[] = {150, 150, 150, 0};
+const uint16_t flash_value_off_pattern[] = {450, 0};
+const uint16_t flash_value_detent_pattern[] = {150, 0};
 
 void show_os_mode_keymap(uint16_t keycode) {
-  flash_leds(os_mode_flash);
+  flash_leds(flash_value_on_pattern);
 }
 
 void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
@@ -178,21 +175,21 @@ void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
 }
 
 void show_default_layer_keymap(uint8_t layer) {
-  flash_leds(default_layer_flash);
+  flash_leds(flash_value_on_pattern);
 }
 
 void show_toggle_keymap(uint16_t keycode, bool value) {
   if (value)
-    flash_leds(toggle_on_flash);
+    flash_leds(flash_value_on_pattern);
   else
-    flash_leds(no_flash);
+    flash_leds(flash_value_off_pattern);
 }
 
 void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
-    flash_leds(detent_flash);
+    flash_leds(flash_value_detent_pattern);
   else
-    flash_leds(no_flash);
+    flash_leds(flash_off_pattern);
 }
 
 
