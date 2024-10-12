@@ -5,7 +5,8 @@
 
 #pragma once
 
-// Remove unwanted keyboard-level settings to get back to a vanilla state
+// Keyboards can activate unwanted rgb effects
+// Remove all effects to get back to a vanilla state
 
 #undef RGBLIGHT_EFFECT_ALTERNATING
 #undef RGBLIGHT_EFFECT_BREATHING

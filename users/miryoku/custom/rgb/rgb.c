@@ -5,8 +5,8 @@
 
 #include QMK_KEYBOARD_H
 
+#include "custom/rgb/rgb.h"
 #include "miryoku.h"
-#include "custom_rgb.h"
 
 
 #ifdef RGB_MATRIX_ENABLE

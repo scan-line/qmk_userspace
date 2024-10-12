@@ -5,9 +5,9 @@
 
 #include QMK_KEYBOARD_H
 
+#include "custom/custom.h"
+#include "custom/rgb/rgb.h"
 #include "miryoku.h"
-#include "custom.h"
-#include "custom_rgb.h"
 #include "process_magic.h"
 
 

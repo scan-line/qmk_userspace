@@ -63,15 +63,15 @@ Key to mute keyboard audio. In the External Power Toggle position.
 
 Run the GitHub "Build QMK Firmware" action. Download firmware from the action run.
 
-## AVR disabled
+## AVR
 
 The "avr" branch cuts down firmware size by
 * [Squeezing AVR](https://docs.qmk.fm/squeezing_avr#squeezing-the-most-out-of-avr)
 * Replacing some QMK features (double tap, key overrides) with smaller-size, cut-down implementations 
 
-(Update) Avr builds are now disabled.
+Be careful
 
-* Qmk is growing slowly in size. The cut-down "avr" branch  no longer passes the avr size check with latest QMK (tested on 2024/09).
+* Qmk is growing slowly in size. The cut-down "avr" branch may no longer pass the avr size check with latest QMK.
 * There is an avr size check in qmk compile, but this is ignored by the GitHub publish action.
 
 ## QMK Userspace
