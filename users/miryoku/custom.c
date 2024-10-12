@@ -64,32 +64,32 @@ float detent_song[][2] = DETENT_SONG;
 
 // Feedback
 
-__attribute__((weak)) void show_os_mode_extra(uint16_t keycode) {
+__attribute__((weak)) void show_os_mode_keymap(uint16_t keycode) {
 }
 
 void show_os_mode(uint16_t keycode) {
   PLAY_SONG(os_mode_set_song);
-  show_os_mode_extra(keycode);
+  show_os_mode_keymap(keycode);
 }
 
-__attribute__((weak)) void show_layer_extra(uint8_t layer, uint8_t default_layer) {
+__attribute__((weak)) void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
 }
 
 void show_layer(uint8_t layer, uint8_t default_layer) {
   clear_slider();
-  show_layer_extra(layer, default_layer);
+  show_layer_keymap(layer, default_layer);
 }
 
-__attribute__((weak)) void show_default_layer_extra(uint8_t layer) {
+__attribute__((weak)) void show_default_layer_keymap(uint8_t layer) {
 }
 
 void show_default_layer(uint8_t layer) {
   PLAY_SONG(layer_set_song);
   clear_overlay();
-  show_default_layer_extra(layer);
+  show_default_layer_keymap(layer);
 }
 
-__attribute__((weak)) void show_toggle_extra(uint16_t keycode, bool value) {
+__attribute__((weak)) void show_toggle_keymap(uint16_t keycode, bool value) {
 }
 
 void show_toggle(uint16_t keycode, bool value) {
@@ -97,17 +97,17 @@ void show_toggle(uint16_t keycode, bool value) {
     PLAY_SONG(toggle_on_song);
   else
     PLAY_SONG(toggle_off_song);
-  show_toggle_extra(keycode, value);
+  show_toggle_keymap(keycode, value);
 }
 
-__attribute__((weak)) void show_value_extra(uint16_t keycode, uint8_t value, bool detent) {
+__attribute__((weak)) void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
 }
 
 void show_value(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     PLAY_SONG(detent_song);
   set_slider(value, detent);
-  show_value_extra(keycode, value, detent);
+  show_value_keymap(keycode, value, detent);
 }
 
 
@@ -553,12 +553,12 @@ void autoshift_release_user(uint16_t keycode, bool shifted, keyrecord_t *record)
 
 // Key processing
 
-__attribute__((weak)) bool process_record_extra(uint16_t keycode, keyrecord_t *record) {
+__attribute__((weak)) bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
   return true;
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  if (!process_record_extra(keycode, record))
+  if (!process_record_keymap(keycode, record))
     return false;
 
   switch (keycode) {
@@ -637,25 +637,25 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 
 // Power
 
-__attribute__((weak)) void suspend_power_down_extra(void) {
+__attribute__((weak)) void suspend_power_down_keymap(void) {
 }
 
 void suspend_power_down_user(void) {
   // May be run multiple times on suspend
-  suspend_power_down_extra();
+  suspend_power_down_keymap();
 }
 
-__attribute__((weak)) void suspend_wakeup_init_extra(void) {
+__attribute__((weak)) void suspend_wakeup_init_keymap(void) {
 }
 
 void suspend_wakeup_init_user(void) {
-  suspend_wakeup_init_extra();
+  suspend_wakeup_init_keymap();
 }
 
 
 // Initialization
 
-__attribute__((weak)) void eeconfig_init_extra(void) {
+__attribute__((weak)) void eeconfig_init_keymap(void) {
 }
 
 void eeconfig_init_user(void) {
@@ -665,14 +665,14 @@ void eeconfig_init_user(void) {
   user_config.os_mode_linux = false;
 
   eeconfig_update_user(user_config.raw);
-  eeconfig_init_extra();
+  eeconfig_init_keymap();
 }
 
-__attribute__((weak)) void keyboard_post_init_extra(void) {
+__attribute__((weak)) void keyboard_post_init_keymap(void) {
 }
 
 void keyboard_post_init_user(void) {
   // Restore user state
   user_config.raw = eeconfig_read_user();
-  keyboard_post_init_extra();
+  keyboard_post_init_keymap();
 }

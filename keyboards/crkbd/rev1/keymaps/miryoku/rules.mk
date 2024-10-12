@@ -6,5 +6,3 @@ CONVERT_TO = elite_pi
 RGBLIGHT_ENABLE = no
 RGB_MATRIX_ENABLE = yes
 WPM_ENABLE = yes
-
-SRC += extras.c
