@@ -286,6 +286,12 @@ bool process_audio_toggle(keyrecord_t *record) {
 
 #ifdef RGB_MATRIX_ENABLE
 
+// Configuration checks
+
+_Static_assert((RGB_MATRIX_EFFECT_MAX == (RGB_MATRIX_EFFECTS_EXPECTED + 1)), "RGB_MATRIX_EFFECT_MAX is the wtong value");
+_Static_assert((RGB_MATRIX_DEFAULT_VAL <= RGB_MATRIX_MAXIMUM_BRIGHTNESS), "RGB_MATRIX_DEFAULT_VAL is too large");
+
+
 // Override keys to allow feedback on keydown
 // (A post_process_record_user implementation is simpler, but fails)
 // (The user function is called on keyup but not on keydown following a return-false)
