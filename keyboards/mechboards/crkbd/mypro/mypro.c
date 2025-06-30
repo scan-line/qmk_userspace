@@ -30,10 +30,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // - Draw logo
 
 void keyboard_post_init_kb(void) {
-    display_init();
+    // display_init();
     keyboard_post_init_user();
 }
 
 void housekeeping_task_kb(void) {
-    display_housekeeping_task();
+    // display_housekeeping_task();
 }
