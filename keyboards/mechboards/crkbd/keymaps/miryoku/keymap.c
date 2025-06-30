@@ -8,14 +8,6 @@
 #include "miryoku.h"
 
 
-// Qmk definitions
-
-// Oneshot no-ops
-#ifdef NO_ACTION_ONESHOT
-#  define get_oneshot_mods() 0
-#endif
-
-
 // Layer rgb
 
 
