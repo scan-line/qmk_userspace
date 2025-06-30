@@ -47,6 +47,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 MIRYOKU_LAYER_LIST
 #undef MIRYOKU_X
 };
+deliberate failure;
 
 
 // shift functions
