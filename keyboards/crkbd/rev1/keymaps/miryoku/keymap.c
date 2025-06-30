@@ -252,10 +252,10 @@ void show_default_layer_keymap(uint8_t layer) {
   set_message(empty_message);
   switch (layer) {
     case U_BASE:
-      flash_message("Cmk");
+      flash_message("Qty");
       break;
     case U_EXTRA:
-      flash_message("Qty");
+      flash_message("Cmk");
       break;
     case U_TAP:
       flash_message("Tap");
