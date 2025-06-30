@@ -1,6 +1,6 @@
 {
     "userspace_version": "1.0",
     "build_targets": [
-        ["mechboards/crkbd/rp2g", "via"]
+        ["mechboards/crkbd/rp2g", "miryoku"]
     ]
 }
