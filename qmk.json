@@ -1,6 +1,6 @@
 {
     "userspace_version": "1.0",
     "build_targets": [
-        ["mechboards/crkbd/pro", "tt"]
+        ["mechboards/crkbd/pro", "via"]
     ]
 }
