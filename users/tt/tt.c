@@ -7,6 +7,7 @@
 
 #include "miryoku.h"
 
+#if 0
 
 // Additional Features double tap guard
 
@@ -87,4 +88,6 @@ combo_t key_combos[COMBO_COUNT] = {
   #endif
   COMBO(thumbcombos_fun, KC_APP)
 };
+#endif
+
 #endif
