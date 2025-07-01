@@ -13,7 +13,7 @@
 #include "hue_breathing_anim.h"
 #include "riverflow_anim.h"
 #include "pixel_flow_anim.h"
-// #include "custom/rgb/slowdrops_anim.h"
+#include "custom/rgb/slowdrops_anim.h"
 #include "solid_reactive_wide.h"
 #include "solid_reactive_nexus.h"
 #include "typing_heatmap_anim.h"

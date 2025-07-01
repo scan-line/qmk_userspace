@@ -11,7 +11,6 @@
 #include "process_magic.h"
 
 
-#if 1
 // Qmk definitions
 
 // Oneshot no-ops
@@ -677,4 +676,3 @@ void keyboard_post_init_user(void) {
   user_config.raw = eeconfig_read_user();
   keyboard_post_init_keymap();
 }
-#endif
