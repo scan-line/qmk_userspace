@@ -1,6 +1,6 @@
 {
     "userspace_version": "1.0",
     "build_targets": [
-        ["mechboards/crkbd/mypro", "tt"]
+        ["mechboards/crkbd/mypro", "miryoku"]
     ]
 }
