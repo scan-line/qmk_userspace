@@ -5,4 +5,31 @@
 
 #pragma once
 
-#include "custom/config.h"
+#include "keycodes.h"
+
+
+// Keycodes
+
+enum my_keycodes {
+  U_USER = QK_USER,
+  U_WIN,
+  U_MAC,
+  U_LNX,
+  U_RGB_TOG,
+  U_RGB_MOD,
+  U_RGB_HUI,
+  U_RGB_SAI,
+  U_RGB_VAI,
+  U_AUD_TOG,
+};
+
+
+// OS mode
+
+typedef enum {
+  OS_MODE_WIN,
+  OS_MODE_MAC,
+  OS_MODE_LNX,
+} os_mode_t;
+
+os_mode_t os_mode_get(void);
