@@ -8,7 +8,7 @@ TAP_DANCE_ENABLE = yes
 CAPS_WORD_ENABLE = yes
 KEY_OVERRIDE_ENABLE = yes
 
-INTROSPECTION_KEYMAP_C = tt.c # keymaps
+INTROSPECTION_KEYMAP_C = miryoku.c # keymaps
 
 include $(USER_PATH)/custom_rules.mk
 
