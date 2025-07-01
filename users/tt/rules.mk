@@ -1,13 +1,8 @@
-# MOUSEKEY_ENABLE = no     # Mouse keys
-# VIA_ENABLE      = yes    # Enable VIA
-# LTO_ENABLE      = yes
-# RAW_ENABLE      = yes
-
 MOUSEKEY_ENABLE = yes
 EXTRAKEY_ENABLE = yes
 AUTO_SHIFT_ENABLE = yes
 # TAP_DANCE_ENABLE = yes
 CAPS_WORD_ENABLE = yes
-# KEY_OVERRIDE_ENABLE = yes
+KEY_OVERRIDE_ENABLE = yes
 
 INTROSPECTION_KEYMAP_C = tt.c
