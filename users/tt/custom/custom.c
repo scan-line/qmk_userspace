@@ -11,7 +11,7 @@
 #include "process_magic.h"
 
 
-#if 0
+#if 1
 // Qmk definitions
 
 // Oneshot no-ops
