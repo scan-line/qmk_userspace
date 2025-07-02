@@ -9,7 +9,6 @@
 #include "miryoku.h"
 
 
-#undef RGB_MATRIX_ENABLE
 #ifdef RGB_MATRIX_ENABLE
 
 
