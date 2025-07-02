@@ -10,7 +10,6 @@
 
 
 #ifdef RGB_MATRIX_ENABLE
-#if 0
 
 // Slider display
 
@@ -56,6 +55,7 @@ void clear_slider(void) {
 
 // Rgb
 
+#if 0
 // Rgb layer
 
 extern const uint8_t led_grid[3][10];
