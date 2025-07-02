@@ -10,7 +10,7 @@
 
 
 #ifdef RGB_MATRIX_ENABLE
-if 0
+#if 0
 
 // Slider display
 
