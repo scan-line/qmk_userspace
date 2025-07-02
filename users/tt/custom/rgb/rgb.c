@@ -263,6 +263,12 @@ void overlay_slider(void) {
     rgb_matrix_set_color(led_grid[2][4], 0, 0, 0);
 }
 
+bool rgb_matrix_indicators_user(void) {
+  rgb_matrix_set_color_all(0, 0, 0)
+  overlay_slider();
+  return false;
+}
+
 #if 0
 bool rgb_matrix_indicators_user(void) {
   const uint8_t default_layer = get_highest_layer(default_layer_state);
