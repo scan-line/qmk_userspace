@@ -10,7 +10,7 @@
 
 
 #ifdef RGB_MATRIX_ENABLE
-
+if 0
 
 // Slider display
 
@@ -265,7 +265,6 @@ void overlay_slider(void) {
 }
 
 bool rgb_matrix_indicators_user(void) {
-#if 0
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
     case U_BUTTON:
@@ -285,8 +284,6 @@ bool rgb_matrix_indicators_user(void) {
     default:
       return true;
   }
-#endif
-  return true;
 }
 
 void clear_overlay(void) {
@@ -329,7 +326,20 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
   return rgb_matrix_check_finished_leds(led_max);
 }
 
-#else
+
+#endif
+
+void set_slider(uint8_t value, bool detent) {
+}
+
+void clear_slider(void) {
+}
+
+void clear_overlay(void) {
+}
+
+// #else
+/*
 
 
 // No RGB_MATRIX_ENABLE
@@ -343,4 +353,5 @@ void clear_slider(void) {
 void clear_overlay(void) {
 }
 
-#endif
+*/
+// #endif
