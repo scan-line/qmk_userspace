@@ -265,6 +265,7 @@ void overlay_slider(void) {
 }
 
 bool rgb_matrix_indicators_user(void) {
+#if 0
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
     case U_BUTTON:
@@ -284,6 +285,8 @@ bool rgb_matrix_indicators_user(void) {
     default:
       return true;
   }
+#endif
+  return true;
 }
 
 void clear_overlay(void) {
