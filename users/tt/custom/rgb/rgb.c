@@ -55,7 +55,6 @@ void clear_slider(void) {
 
 // Rgb
 
-#if 0
 // Rgb layer
 
 extern const uint8_t led_grid[3][10];
@@ -264,6 +263,7 @@ void overlay_slider(void) {
     rgb_matrix_set_color(led_grid[2][4], 0, 0, 0);
 }
 
+#if 0
 bool rgb_matrix_indicators_user(void) {
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
