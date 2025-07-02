@@ -329,11 +329,11 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
 
 #endif
 
-void set_slider(uint8_t value, bool detent) {
-}
+// void set_slider(uint8_t value, bool detent) {
+// }
 
-void clear_slider(void) {
-}
+// void clear_slider(void) {
+// }
 
 void clear_overlay(void) {
 }
