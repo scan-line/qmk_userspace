@@ -301,6 +301,8 @@ void clear_overlay(void) {
 bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
+  if (!is_keyboard_master()) return rgb_matrix_check_finished_leds(led_max);
+
   if (params->init) {
     const uint8_t default_layer = get_highest_layer(default_layer_state);
     switch (default_layer) {
