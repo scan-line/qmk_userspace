@@ -269,7 +269,6 @@ bool rgb_matrix_indicators_user(void) {
   return false;
 }
 
-#if 0
 bool rgb_matrix_indicators_user(void) {
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
@@ -292,6 +291,7 @@ bool rgb_matrix_indicators_user(void) {
   }
 }
 
+#if 0
 void clear_overlay(void) {
   // Restart matrix to remove overlay
   if (!rgb_matrix_get_suspend_state()) {
