@@ -293,7 +293,7 @@ void clear_overlay(void) {
   }
 }
 
-#if 0}
+#if 0
 
 bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
