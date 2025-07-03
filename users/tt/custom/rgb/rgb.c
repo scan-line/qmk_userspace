@@ -285,6 +285,7 @@ bool rgb_matrix_indicators_user(void) {
   }
 }
 
+/*
 void clear_overlay(void) {
   // Restart matrix to remove overlay
   if (!rgb_matrix_get_suspend_state()) {
@@ -292,8 +293,10 @@ void clear_overlay(void) {
     rgb_matrix_set_suspend_state(false);
   }
 }
+*/
 
-#if 0
+void clear_overlay(void) {
+}
 
 bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
@@ -328,10 +331,7 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
 }
 
 
-#endif
-
-// #else
-/*
+#else
 
 
 // No RGB_MATRIX_ENABLE
@@ -345,5 +345,5 @@ void clear_slider(void) {
 void clear_overlay(void) {
 }
 
-*/
+
 #endif

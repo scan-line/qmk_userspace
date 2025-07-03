@@ -5,7 +5,7 @@
 
 // Replace the shipped rgb_matrix_effects.inc to control matrix mode order
 // Matrix mode follows include order, starting with enum 1
-// #include "custom/rgb/feedback_anim.h"
+#include "custom/rgb/feedback_anim.h"
 #include "solid_color_anim.h"
 #include "alpha_mods_anim.h"
 #include "gradient_up_down_anim.h"
