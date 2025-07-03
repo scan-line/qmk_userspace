@@ -127,9 +127,7 @@ void overlay_media_settings(void) {
   rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
 }
 
-void overlay_layer(uint8_t layer) {
-  RGB_MATRIX_USE_LIMITS(led_min, led_max);
-
+void overlay_layer(uint8_t layer, uint8_t led_min, uint8_t led_max, effect_params_t* params) {
   const uint8_t scale = rgb_matrix_get_val();
   const RGB rgb = layer_accent_color(scale, layer);
   const RGB on = scaled_hsv_to_rgb(scale, HSV_GREEN);
@@ -265,7 +263,7 @@ void overlay_slider(void) {
     rgb_matrix_set_color(led_grid[2][4], 0, 0, 0);
 }
 
-bool rgb_matrix_indicators_user(void) {
+/* bool rgb_matrix_indicators_user(void) {
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
     case U_BUTTON:
@@ -286,6 +284,7 @@ bool rgb_matrix_indicators_user(void) {
       return true;
   }
 }
+*/
 
 /*
 void clear_overlay(void) {
@@ -326,7 +325,7 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
 
   rgb_matrix_set_color_all(0, 0, 0);
   const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
-  overlay_layer(layer);
+  overlay_layer(layer, led_min, led_max, params);
   overlay_slider();
 
   return rgb_matrix_check_finished_leds(led_max);
