@@ -55,6 +55,22 @@ void clear_slider(void) {
 
 // Rgb
 
+#define MY_RGB_LIMITS(led_min, led_max)) \
+#    if defined(RGB_MATRIX_SPLIT)
+    uint8_t led_min_index = 0;
+    uint8_t led_max_index = RGB_MATRIX_LED_COUNT;
+    if (is_keyboard_left() && (led_max_index > k_rgb_matrix_split[0])) led_max_index = k_rgb_matrix_split[0];
+    if (!(is_keyboard_left()) && (led_min_index < k_rgb_matrix_split[0])) led_min_index = k_rgb_matrix_split[0];
+#    else
+    led_min_index = 0;
+    led_max_index = RGB_MATRIX_LED_COUNT;
+#    endif
+
+#define MY_RGB_SET_COLOR(i, r, g, b) \
+    if (i >= led_min && i < led_max) {             \
+        rgb_matrix_set_color(i, r, g, b);          \
+    }
+
 // Rgb layer
 
 extern const uint8_t led_grid[3][10];
@@ -128,6 +144,8 @@ void overlay_media_settings(void) {
 }
 
 void overlay_layer(uint8_t layer) {
+  RGB_MATRIX_USE_LIMITS(led_min, led_max);
+
   const uint8_t scale = rgb_matrix_get_val();
   const RGB rgb = layer_accent_color(scale, layer);
   const RGB on = scaled_hsv_to_rgb(scale, HSV_GREEN);
@@ -137,51 +155,51 @@ void overlay_layer(uint8_t layer) {
     case U_EXTRA:
     case U_TAP:
       // Accent the home position
-      rgb_matrix_set_color(led_grid[1][0], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][2], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][3], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][6], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][7], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][8], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][9], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_thumb[4], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][0], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][2], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][3], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][6], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][7], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][8], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][9], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[4], rgb.r, rgb.g, rgb.b);
       break;
     case U_BUTTON:
        // Accent cut/copy/paste
-      rgb_matrix_set_color(led_grid[0][1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][2], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][3], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][6], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][7], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][8], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_thumb[4], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][2], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][3], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][6], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][7], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][8], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[4], rgb.r, rgb.g, rgb.b);
      break;
     case U_NAV:
     case U_MOUSE:
     case U_MEDIA:
       // Accent the cursor keys
-      rgb_matrix_set_color(led_grid[1][6], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][7], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][8], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][9], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][6], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][7], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][8], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][9], rgb.r, rgb.g, rgb.b);
       break;
     case U_NUM:
     case U_SYM:
     case U_FUN:
       // Accent the numpad keys
-      rgb_matrix_set_color(led_grid[0][1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][2], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[0][3], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][2], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[1][3], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[2][1], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[2][2], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_grid[2][3], rgb.r, rgb.g, rgb.b);
-      rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][2], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[0][3], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][2], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[1][3], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[2][1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[2][2], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_grid[2][3], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[1], rgb.r, rgb.g, rgb.b);
       break;
     default:
       break;
@@ -192,37 +210,37 @@ void overlay_layer(uint8_t layer) {
   // For media layer, color settings state
   switch (layer) {
     case U_BASE:
-      rgb_matrix_set_color(led_grid[1][3], on.r, on.g, on.b);
-      rgb_matrix_set_color(led_grid[1][6], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[1][3], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[1][6], on.r, on.g, on.b);
       break;
     case U_EXTRA:
-      rgb_matrix_set_color(led_grid[1][2], on.r, on.g, on.b);
-      rgb_matrix_set_color(led_grid[1][7], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[1][2], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[1][7], on.r, on.g, on.b);
       break;
     case U_TAP:
-      rgb_matrix_set_color(led_grid[1][1], on.r, on.g, on.b);
-      rgb_matrix_set_color(led_grid[1][8], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[1][1], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[1][8], on.r, on.g, on.b);
       break;
     case U_BUTTON:
       break;
     case U_NAV:
-      rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[1], rgb.r, rgb.g, rgb.b);
       break;
     case U_MOUSE:
-      rgb_matrix_set_color(led_thumb[2], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[2], rgb.r, rgb.g, rgb.b);
       break;
     case U_MEDIA:
-      rgb_matrix_set_color(led_thumb[0], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[0], rgb.r, rgb.g, rgb.b);
       overlay_media_settings();
       break;
     case U_NUM:
-      rgb_matrix_set_color(led_thumb[4], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[4], rgb.r, rgb.g, rgb.b);
       break;
     case U_SYM:
-      rgb_matrix_set_color(led_thumb[3], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[3], rgb.r, rgb.g, rgb.b);
       break;
     case U_FUN:
-      rgb_matrix_set_color(led_thumb[5], rgb.r, rgb.g, rgb.b);
+      MY_RGB_SET_COLOR(led_thumb[5], rgb.r, rgb.g, rgb.b);
       break;
     default:
       break;
