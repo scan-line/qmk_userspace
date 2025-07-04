@@ -145,7 +145,7 @@ void overlay_media_settings(void) {
 }
 
 void overlay_layer(uint8_t layer) {
-  RGB_MATRIX_USE_LIMITS(led_min, led_max);
+  MY_RGB_LIMITS(led_min, led_max);
 
   const uint8_t scale = rgb_matrix_get_val();
   const RGB rgb = layer_accent_color(scale, layer);
