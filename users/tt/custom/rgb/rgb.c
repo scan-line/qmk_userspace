@@ -56,7 +56,7 @@ void clear_slider(void) {
 // Rgb
 
 #    if defined(RGB_MATRIX_SPLIT)
-#define MY_RGB_LIMITS(led_min, led_max))\
+#define MY_RGB_LIMITS(led_min, led_max) \
     uint8_t led_min_index = 0; \
     uint8_t led_max_index = RGB_MATRIX_LED_COUNT; \
     if (is_keyboard_left() && (led_max_index > k_rgb_matrix_split[0])) led_max_index = k_rgb_matrix_split[0]; \
