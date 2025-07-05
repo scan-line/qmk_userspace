@@ -56,14 +56,14 @@ void clear_slider(void) {
 // Rgb
 
 #    if defined(RGB_MATRIX_SPLIT)
-#define MY_RGB_LIMITS(led_min, led_max) \
+#define MY_RGB_LIMITS() \
     const uint8_t k_rgb_matrix_split[2] = RGB_MATRIX_SPLIT; \
-    led_min = 0; \
-    led_max = RGB_MATRIX_LED_COUNT; \
+    uint8_t led_min = 0; \
+    uint8_t led_max = RGB_MATRIX_LED_COUNT; \
     if (is_keyboard_left() && (led_max > k_rgb_matrix_split[0])) led_max = k_rgb_matrix_split[0]; \
     if (!(is_keyboard_left()) && (led_min < k_rgb_matrix_split[0])) led_min = k_rgb_matrix_split[0]
 #    else
-#define MY_RGB_LIMITS(led_min, led_max)) \
+#define MY_RGB_LIMITS()) \
     led_min = 0; \
     led_max = RGB_MATRIX_LED_COUNT
 #    endif
@@ -146,7 +146,7 @@ void overlay_media_settings(void) {
 }
 
 void overlay_layer(uint8_t layer) {
-  MY_RGB_LIMITS(led_min, led_max);
+  MY_RGB_LIMITS();
 
   const uint8_t scale = rgb_matrix_get_val();
   const RGB rgb = layer_accent_color(scale, layer);
