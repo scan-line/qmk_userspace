@@ -58,19 +58,16 @@ void clear_slider(void) {
 #    if defined(RGB_MATRIX_SPLIT)
 #define MY_RGB_LIMITS() \
     const uint8_t k_rgb_matrix_split[2] = RGB_MATRIX_SPLIT; \
-    uint8_t led_min = 0; \
     uint8_t led_max = RGB_MATRIX_LED_COUNT; \
-    if (is_keyboard_left() && (led_max > k_rgb_matrix_split[0])) led_max = k_rgb_matrix_split[0]; \
-    if (!(is_keyboard_left()) && (led_min < k_rgb_matrix_split[0])) led_min = k_rgb_matrix_split[0]
+    if (is_keyboard_left() && (led_max > k_rgb_matrix_split[0])) led_max = k_rgb_matrix_split[0]
 #    else
 #define MY_RGB_LIMITS()) \
-    led_min = 0; \
     led_max = RGB_MATRIX_LED_COUNT
 #    endif
 
 #define MY_RGB_SET_COLOR(i, r, g, b) \
-    if (i >= led_min && i < led_max) {             \
-        rgb_matrix_set_color(i, r, g, b);          \
+    if (i < led_max) { \
+        rgb_matrix_set_color(i, r, g, b); \
     }
 
 // Rgb layer
@@ -107,6 +104,8 @@ RGB layer_accent_color(uint8_t scale, uint8_t layer) {
 }
 
 void overlay_media_settings(void) {
+  MY_RGB_LIMITS();
+
   const uint8_t scale = rgb_matrix_get_val();
   const RGB on = scaled_hsv_to_rgb(scale, HSV_GREEN);
   const RGB off = scaled_hsv_to_rgb(scale, HSV_RED);
@@ -114,35 +113,35 @@ void overlay_media_settings(void) {
   switch (os_mode_get())
   {
     case OS_MODE_WIN:
-      rgb_matrix_set_color(led_grid[2][6], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[2][6], on.r, on.g, on.b);
       break;
     case OS_MODE_MAC:
-      rgb_matrix_set_color(led_grid[2][7], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[2][7], on.r, on.g, on.b);
       break;
     case OS_MODE_LNX:
-      rgb_matrix_set_color(led_grid[2][8], on.r, on.g, on.b);
+      MY_RGB_SET_COLOR(led_grid[2][8], on.r, on.g, on.b);
       break;
     default:
       break;
   }
 
   if (rgb_matrix_is_enabled())
-    rgb_matrix_set_color(led_grid[0][5], on.r, on.g, on.b);
+    MY_RGB_SET_COLOR(led_grid[0][5], on.r, on.g, on.b);
   else
-    rgb_matrix_set_color(led_grid[0][5], off.r, off.g, off.b);
+    MY_RGB_SET_COLOR(led_grid[0][5], off.r, off.g, off.b);
 
 #ifdef AUDIO_ENABLE
   if (is_audio_on())
-    rgb_matrix_set_color(led_grid[1][5], on.r, on.g, on.b);
+    MY_RGB_SET_COLOR(led_grid[1][5], on.r, on.g, on.b);
   else
-    rgb_matrix_set_color(led_grid[1][5], off.r, off.g, off.b);
+    MY_RGB_SET_COLOR(led_grid[1][5], off.r, off.g, off.b);
 #endif
 
   const HSV hsv = rgb_matrix_get_hsv();
   const RGB rgb = hsv_to_rgb(hsv);
-  rgb_matrix_set_color(led_grid[0][7], rgb.r, rgb.g, rgb.b);
-  rgb_matrix_set_color(led_grid[0][8], rgb.r, rgb.g, rgb.b);
-  rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
+  MY_RGB_SET_COLOR(led_grid[0][7], rgb.r, rgb.g, rgb.b);
+  MY_RGB_SET_COLOR(led_grid[0][8], rgb.r, rgb.g, rgb.b);
+  MY_RGB_SET_COLOR(led_grid[0][9], rgb.r, rgb.g, rgb.b);
 }
 
 void overlay_layer(uint8_t layer) {
@@ -253,6 +252,8 @@ void overlay_slider(void) {
   if (!slider.active)
     return;
 
+  MY_RGB_LIMITS();
+
   // Display bits in binary
   const uint8_t val = rgb_matrix_get_val();
   const RGB bit = scaled_hsv_to_rgb(val, HSV_YELLOW);
@@ -263,9 +264,9 @@ void overlay_slider(void) {
   // Five bits is enough
   for (int i = 0; i < 5; i++) {
     if (bits & mask)
-      rgb_matrix_set_color(led_grid[0][i], bit.r, bit.g, bit.b);
+      MY_RGB_SET_COLOR(led_grid[0][i], bit.r, bit.g, bit.b);
     else
-      rgb_matrix_set_color(led_grid[0][i], 0, 0, 0);
+      MY_RGB_SET_COLOR(led_grid[0][i], 0, 0, 0);
     bits >>= 1;
   }
 
@@ -273,14 +274,14 @@ void overlay_slider(void) {
   const HSV hsv = rgb_matrix_get_hsv();
   const RGB rgb = hsv_to_rgb(hsv);
   for (int i = 0; i < 5; i++) {
-    rgb_matrix_set_color(led_grid[1][i], rgb.r, rgb.g, rgb.b);
+    MY_RGB_SET_COLOR(led_grid[1][i], rgb.r, rgb.g, rgb.b);
   }
 
   // Display detent match
   if (slider.detent)
-    rgb_matrix_set_color(led_grid[2][4], on.r, on.g, on.b);
+    MY_RGB_SET_COLOR(led_grid[2][4], on.r, on.g, on.b);
   else
-    rgb_matrix_set_color(led_grid[2][4], 0, 0, 0);
+    MY_RGB_SET_COLOR(led_grid[2][4], 0, 0, 0);
 }
 
 bool rgb_matrix_indicators_user(void) {
