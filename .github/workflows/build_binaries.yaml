@@ -12,6 +12,11 @@ jobs:
     with:
       qmk_repo: qmk/qmk_firmware
       qmk_ref: master
+      preparation_command: |
+        set -e
+        mkdir -p ./qmk_firmware/keyboards/mechboards/crkbd/
+        cp -r ./patch/keyboards/mechboards/crkbd/ ./qmk_firmware/keyboards/mechboards/
+        ls -l ./qmk_firmware/keyboards/mechboards/crkbd/
 
   publish:
     name: 'QMK Userspace Publish'
