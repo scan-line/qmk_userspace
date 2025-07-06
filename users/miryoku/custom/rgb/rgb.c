@@ -56,6 +56,29 @@ void clear_slider(void) {
 
 // Rgb
 
+// Rgb split matrix
+
+#ifdef RGB_MATRIX_SPLIT
+
+extern const uint8_t k_rgb_matrix_split[2];
+
+// Prevent right-hand rgb matrix duplicating to left-hand rgb matrix.
+void rgb_split_matrix_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
+  if (is_keyboard_left()) {
+    if (index < k_rgb_matrix_split[0]) {
+      rgb_matrix_set_color(index, red, green, blue);
+    }
+  } else
+    if (k_rgb_matrix_split[0] <= index) {
+      rgb_matrix_set_color(index, red, green, blue);
+    }
+}
+
+// Patch in handed test for rgb matrix.
+#define rgb_matrix_set_color rgb_split_matrix_set_color
+
+#endif
+
 // Rgb layer
 
 extern const uint8_t led_grid[3][10];
@@ -190,7 +213,6 @@ void overlay_layer(uint8_t layer) {
 
   // For thumb layers, accent the thumb pressed
   // For base layers, color layer-lock finger
-  // For media layer, color settings state
   switch (layer) {
     case U_BASE:
       rgb_matrix_set_color(led_grid[1][3], on.r, on.g, on.b);
@@ -214,7 +236,6 @@ void overlay_layer(uint8_t layer) {
       break;
     case U_MEDIA:
       rgb_matrix_set_color(led_thumb[0], rgb.r, rgb.g, rgb.b);
-      overlay_media_settings();
       break;
     case U_NUM:
       rgb_matrix_set_color(led_thumb[4], rgb.r, rgb.g, rgb.b);
@@ -264,6 +285,17 @@ void overlay_slider(void) {
     rgb_matrix_set_color(led_grid[2][4], 0, 0, 0);
 }
 
+void draw_layer(uint8_t layer) {
+  rgb_matrix_set_color_all(0, 0, 0);
+  overlay_layer(layer);
+  if (layer == U_MEDIA) {
+    overlay_media_settings();
+    overlay_slider();
+  }
+}
+
+static bool layer_lock = false;
+
 bool rgb_matrix_indicators_user(void) {
   const uint8_t default_layer = get_highest_layer(default_layer_state);
   switch (default_layer) {
@@ -273,24 +305,18 @@ bool rgb_matrix_indicators_user(void) {
     case U_NUM:
     case U_SYM:
     case U_FUN:
-      rgb_matrix_set_color_all(0, 0, 0);
-      overlay_layer(default_layer);
-      return false;
     case U_MEDIA:
-      rgb_matrix_set_color_all(0, 0, 0);
-      overlay_layer(default_layer);
-      overlay_slider();
+      layer_lock = true;
+      draw_layer(default_layer);
       return false;
     default:
+      if (layer_lock && !rgb_matrix_get_suspend_state()) {
+        // Restart matrix to remove overlay
+        rgb_matrix_set_suspend_state(true);
+        rgb_matrix_set_suspend_state(false);
+      }
+      layer_lock = false;
       return true;
-  }
-}
-
-void clear_overlay(void) {
-  // Restart matrix to remove overlay
-  if (!rgb_matrix_get_suspend_state()) {
-    rgb_matrix_set_suspend_state(true);
-    rgb_matrix_set_suspend_state(false);
   }
 }
 
@@ -298,30 +324,11 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
   if (params->init) {
-    const uint8_t default_layer = get_highest_layer(default_layer_state);
-    switch (default_layer) {
-      case U_BUTTON:
-      case U_NAV:
-      case U_MOUSE:
-      case U_NUM:
-      case U_SYM:
-      case U_FUN:
-      case U_MEDIA:
-        // Start with overlay
-        // Leave any overlay slider
-        break;
-      default:
-        // Start without overlay.
-        // Start clean
-        clear_slider();
-        break;
-    }
+    clear_slider();
   }
 
-  rgb_matrix_set_color_all(0, 0, 0);
   const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
-  overlay_layer(layer);
-  overlay_slider();
+  draw_layer(layer);
 
   return rgb_matrix_check_finished_leds(led_max);
 }
@@ -335,9 +342,6 @@ void set_slider(uint8_t value, bool detent) {
 }
 
 void clear_slider(void) {
-}
-
-void clear_overlay(void) {
 }
 
 #endif

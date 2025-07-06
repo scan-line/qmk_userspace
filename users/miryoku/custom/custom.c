@@ -85,7 +85,6 @@ __attribute__((weak)) void show_default_layer_keymap(uint8_t layer) {
 
 void show_default_layer(uint8_t layer) {
   PLAY_SONG(layer_set_song);
-  clear_overlay();
   show_default_layer_keymap(layer);
 }
 
