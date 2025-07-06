@@ -2,6 +2,7 @@
     "userspace_version": "1.0",
     "build_targets": [
         ["crkbd/rev1", "miryoku"],
-        ["zsa/planck_ez/glow", "miryoku"]
+        ["zsa/planck_ez/glow", "miryoku"],
+        ["mechboards/crkbd/rp2g", "miryoku"]
     ]
 }
