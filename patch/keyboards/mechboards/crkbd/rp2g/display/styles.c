@@ -65,15 +65,3 @@ void init_styles(void) {
     lv_style_set_bg_color(&style_btn, lv_color_hex(0x444444));       // Set background color
     lv_style_set_bg_color(&style_btn_checked, lv_color_hex(mb_col)); // Set background color if checked
 }
-
-#if LV_COLOR_DEPTH == 1
-#error "depth 1"
-#elif LV_COLOR_DEPTH == 8
-#error "depth 8"
-#elif LV_COLOR_DEPTH == 16
-#error "depth 16"
-#elif LV_COLOR_DEPTH == 32
-#error "depth 32"
-#else
-#error "depth unknown"
-#endif
