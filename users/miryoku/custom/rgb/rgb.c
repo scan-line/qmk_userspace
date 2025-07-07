@@ -312,10 +312,8 @@ bool rgb_matrix_indicators_user(void) {
     default:
       if (layer_lock && !rgb_matrix_get_suspend_state()) {
         // Restart matrix to remove overlay
-        if (is_keyboard_left()) {
-          rgb_matrix_set_suspend_state(true);
-          rgb_matrix_set_suspend_state(false);
-        }
+        rgb_matrix_set_suspend_state(true);
+        rgb_matrix_set_suspend_state(false);
       }
       layer_lock = false;
       return true;
