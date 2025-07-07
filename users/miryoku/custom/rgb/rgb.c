@@ -312,8 +312,11 @@ bool rgb_matrix_indicators_user(void) {
     default:
       if (layer_lock && !rgb_matrix_get_suspend_state()) {
         // Restart matrix to remove overlay
-        rgb_matrix_set_suspend_state(true);
-        rgb_matrix_set_suspend_state(false);
+        // rgb_matrix_set_suspend_state(true);
+        // rgb_matrix_set_suspend_state(false);
+        uint8_t mode = rgb_matrix_get_mode();
+        rgb_matrix_mode_noeeprom(0);
+        rgb_matrix_mode_noeeprom(mode);
       }
       layer_lock = false;
       return true;
