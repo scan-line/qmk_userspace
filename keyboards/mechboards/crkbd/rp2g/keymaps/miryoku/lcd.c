@@ -74,9 +74,9 @@ void lcd_init(void) {
   qp_set_viewport_offsets(lcd, LCD_OFFSET_X, LCD_OFFSET_Y);
 
 #ifdef LCD_INVERT_COLOUR
-  qp_comms_start(lcd);
-  qp_comms_command(lcd, ST77XX_CMD_INVERT_ON);
-  qp_comms_stop(lcd);
+  // qp_comms_start(lcd);
+  // qp_comms_command(lcd, ST77XX_CMD_INVERT_ON);
+  // qp_comms_stop(lcd);
 #endif
 
   if (!qp_lvgl_attach(lcd)) return;
