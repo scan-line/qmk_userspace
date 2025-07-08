@@ -12,13 +12,10 @@
 #include "printf.h"
 
 
-void lcd_draw_left(void) {
+void lcd_init_left(void) {
 }
 
-void lcd_draw_right(void) {
-}
-
-void lcd_init_styles(void) {
+void lcd_init_right(void) {
 }
 
 void lcd_init(void) {
@@ -36,12 +33,10 @@ void lcd_init(void) {
 
     if (!qp_lvgl_attach(lcd)) return;
 
-    lcd_init_styles();
-
     if (is_keyboard_left())
-        lcd_draw_left();
+        lcd_init_left();
     else
-        lcd_draw_right();
+        lcd_init_right();
 }
 
 void lcd_housekeeping_task(void) {
