@@ -6,6 +6,7 @@
 #include "oled.h"
 
 #include "qp.h"
+#include "qp_comms.h"
 #include "qp_st77xx_opcodes.h"
 #include "qp_lvgl.h"
 #include "printf.h"
