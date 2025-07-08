@@ -63,7 +63,7 @@ void lcd_init_left(void) {
 void lcd_init_right(void) {
   lv_obj_t* logo = lv_img_create(lv_scr_act());
   lv_img_set_src(logo, &miryoku_logo);
-  lv_img_set_zoom(logo, 256);
+  lv_img_set_zoom(logo, 256*2);
   lv_obj_align(logo, LV_ALIGN_TOP_MID, 0, 30);
 }
 
