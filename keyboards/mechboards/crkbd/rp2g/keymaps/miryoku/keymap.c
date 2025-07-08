@@ -6,7 +6,7 @@
 #include QMK_KEYBOARD_H
 
 #include "miryoku.h"
-#include "oled.h"
+#include "lcd.h"
 
 
 // Layer rgb
@@ -29,13 +29,13 @@ const uint8_t led_thumb[6] = {
 };
 
 
-// Oled
+// Lcd
 
 void keyboard_post_init_kb(void) {
-    oled_init();
+    lcd_init();
     keyboard_post_init_user();
 }
 
 void housekeeping_task_kb(void) {
-    oled_housekeeping_task();
+    lcd_housekeeping_task();
 }

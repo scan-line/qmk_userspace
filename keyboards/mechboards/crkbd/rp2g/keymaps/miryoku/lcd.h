@@ -5,5 +5,5 @@
 
 #include "quantum.h"
 
-void oled_init(void);
-void oled_housekeeping_task(void);
+void lcd_init(void);
+void lcd_housekeeping_task(void);
