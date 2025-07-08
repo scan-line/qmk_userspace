@@ -18,7 +18,6 @@
 
 // Layer rgb
 
-
 // Corrne 3x6_3 led pattern is
 // split left           split right 
 // 24 23 18 17 10  9    36 37 44 45 50 51

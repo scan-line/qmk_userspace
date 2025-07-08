@@ -10,7 +10,6 @@
 
 // Layer rgb
 
-
 // Corne 3x6_3 led pattern is
 // split left           split right
 // 24 23 18 17 10  9    36 37 44 45 50 51
@@ -27,3 +26,15 @@ const uint8_t led_grid[3][10] = {
 const uint8_t led_thumb[6] = {
            14, 13,  6,   33, 40, 41
 };
+
+
+// Oled
+
+void keyboard_post_init_kb(void) {
+    // display_init();
+    keyboard_post_init_user();
+}
+
+void housekeeping_task_kb(void) {
+    // display_housekeeping_task();
+}

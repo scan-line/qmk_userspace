@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Init board:
 // - Draw logo
 
+#if 0
 void keyboard_post_init_kb(void) {
     display_init();
     keyboard_post_init_user();
@@ -37,3 +38,4 @@ void keyboard_post_init_kb(void) {
 void housekeeping_task_kb(void) {
     display_housekeeping_task();
 }
+#endif
