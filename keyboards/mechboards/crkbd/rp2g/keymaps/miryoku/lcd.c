@@ -63,7 +63,7 @@ void lcd_init_left(void) {
 void lcd_init_right(void) {
   lv_disp_t* disp = lv_disp_get_default();
   lv_color_t bg = lv_palette_darken(LV_PALETTE_BLUE_GREY, 2);
-  lv_disp_set_bg_color(disp, bg)
+  lv_disp_set_bg_color(disp, bg);
 
   lv_obj_t* logo = lv_img_create(lv_scr_act());
   lv_img_set_src(logo, &miryoku_logo);
