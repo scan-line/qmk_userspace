@@ -252,7 +252,7 @@ bool process_clipcode(clip_t clip, keyrecord_t *record) {
 
 #ifdef AUDIO_ENABLE
 
-bool process_audio_toggle(keyrecord_t *record) {
+bool process_audio_toggle(uint16_t keycode, keyrecord_t *record) {
   if (!record->event.pressed)
     return false;
 
@@ -426,26 +426,67 @@ bool process_rgb_val(uint16_t keycode, keyrecord_t *record) {
 
 // Caps word
 
+#ifdef CAPS_WORD_ENABLE
+
 bool caps_word_press_user(uint16_t keycode) {
   switch (keycode) {
-    // Continue Caps Word, with shift
+    // Continue caps word, with shift.
     case KC_A ... KC_Z:
-        add_weak_mods(MOD_BIT(KC_LSFT));
-        return true;
+      add_weak_mods(MOD_BIT(KC_LSFT));
+      return true;
 
-    // Continue Caps Word, no shift
+    // Continue caps word, no shift.
     case KC_1 ... KC_0:
     case KC_BSPC:
     case KC_DEL:
     case KC_MINS:
     case KC_UNDS:
-        return true;
+      return true;
 
+    // No change to caps word state.
+    // Toggle off is handled by process_caps_word_toggle.
+    case U_CW_TOGG:
+      return true;
+    
     // End Caps Word
     default:
-        return false;
+      return false;
   }
 }
+
+bool process_caps_word_toggle(uint16_t keycode, keyrecord_t *record) {     
+  // Custom keycode to allow shift-override.
+  // Standard QK_CAPS_WORD_TOGGLE is processed before overrides,
+  // and cannot be overridden.
+  if (!record->event.pressed)
+    return false;
+
+  // Caps lock instead of caps word?
+  // Make sure caps word is off.
+  const uint8_t mods = get_mods() | get_weak_mods() | get_oneshot_mods();
+  const uint8_t shifted = mods & MOD_MASK_SHIFT;
+  if (shifted) {
+    caps_word_off();
+    // Hand on to key override.
+    return true;
+  }
+
+  // Caps word instead of caps lock.
+  // Make sure caps lock is off.
+  const led_t saved_led_state = host_keyboard_led_state();
+  if (saved_led_state.caps_lock)
+    tap_code(KC_CAPS_LOCK);
+
+  // Caps word toggle.
+  if (is_caps_word_on())
+    caps_word_off();
+  else
+    caps_word_on();
+  
+  return false;
+}
+
+#endif
 
 
 // Shift and Auto Shift overrides
@@ -472,7 +513,7 @@ bool nine_shift_action(bool key_down, void *context) {
 
 #define LAYER_MASK_NUM (1 << U_NUM)
 
-const key_override_t capsword_shift_override = ko_make_basic(MOD_MASK_SHIFT, CW_TOGG, KC_CAPS);
+const key_override_t capsword_shift_override = ko_make_basic(MOD_MASK_SHIFT, U_CW_TOGG, KC_CAPS_LOCK);
 const key_override_t nine_shift_override = ko_make_with_action_and_layers(MOD_MASK_SHIFT, KC_9, nine_shift_action, LAYER_MASK_NUM);
 const key_override_t dot_shift_override = ko_make_with_layers(MOD_MASK_SHIFT, KC_DOT, KC_LEFT_PAREN, LAYER_MASK_NUM);
 // The following key overrides give auto-repeat consistency to the left-hand thumb keys
@@ -593,7 +634,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 #endif
 #ifdef AUDIO_ENABLE
     case U_AUD_TOG:
-      return process_audio_toggle(record);
+      return process_audio_toggle(keycode, record);
+#endif
+#ifdef CAPS_WORD_ENABLE
+    case U_CW_TOGG:
+      return process_caps_word_toggle(keycode, record);
 #endif
     default:
       return true;

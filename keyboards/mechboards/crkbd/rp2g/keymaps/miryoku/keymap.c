@@ -6,10 +6,10 @@
 #include QMK_KEYBOARD_H
 
 #include "miryoku.h"
+#include "lcd.h"
 
 
 // Layer rgb
-
 
 // Corne 3x6_3 led pattern is
 // split left           split right
@@ -27,3 +27,20 @@ const uint8_t led_grid[3][10] = {
 const uint8_t led_thumb[6] = {
            14, 13,  6,   33, 40, 41
 };
+
+
+// Lcd
+
+void keyboard_post_init_kb(void) {
+  lcd_init();
+  keyboard_post_init_user();
+}
+
+void housekeeping_task_kb(void) {
+  lcd_housekeeping_task();
+}
+
+bool process_record_keymap(uint16_t keycode, keyrecord_t *record) {
+  process_record_luna(keycode, record);
+  return true;
+}

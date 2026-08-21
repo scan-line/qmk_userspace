@@ -42,6 +42,7 @@ enum my_keycodes {
   U_RGB_SAI,
   U_RGB_VAI,
   U_AUD_TOG,
+  U_CW_TOGG,
 };
 
 

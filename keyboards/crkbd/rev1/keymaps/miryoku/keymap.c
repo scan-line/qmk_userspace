@@ -18,7 +18,6 @@
 
 // Layer rgb
 
-
 // Corrne 3x6_3 led pattern is
 // split left           split right 
 // 24 23 18 17 10  9    36 37 44 45 50 51
@@ -48,10 +47,10 @@ const uint8_t led_thumb[6] = {
 #define ANIM_SIZE 96
 
 // Status variables
-bool isJumping = false;
-bool showJump = false;
+bool is_jumping = false;
+bool show_jump = false;
 
-static void render_luna(int x, int y) {
+static void luna_render(int x, int y) {
   // Frames 32x22px
   // Sit
   static const char sit[2][ANIM_SIZE] = {
@@ -130,13 +129,13 @@ static void render_luna(int x, int y) {
   };
 
   // Animation
-  void animate_luna(void) {
+  void luna_animate(void) {
     // Clear
-    if (isJumping || showJump) {
+    if (is_jumping || show_jump) {
       oled_set_cursor(x, y + 2);
       oled_write("     ", false);
       oled_set_cursor(x, y - 1);
-      showJump = false;
+      show_jump = false;
     } else {
       oled_set_cursor(x, y - 1);
       oled_write("     ", false);
@@ -150,11 +149,11 @@ static void render_luna(int x, int y) {
     // Current status
     const int current_wpm = get_current_wpm();
     const led_t led_state = host_keyboard_led_state();
-    const bool isSneaking = (get_mods() | get_weak_mods() | get_oneshot_mods()) & (MOD_MASK_CTRL | MOD_MASK_GUI);
+    const bool is_sneaking = (get_mods() | get_weak_mods() | get_oneshot_mods()) & (MOD_MASK_CTRL | MOD_MASK_GUI);
 
     if (led_state.caps_lock || is_caps_word_on()) {
       oled_write_raw(bark[current_frame], ANIM_SIZE);
-    } else if (isSneaking) {
+    } else if (is_sneaking) {
       oled_write_raw(sneak[current_frame], ANIM_SIZE);
     } else if (current_wpm <= MIN_WALK_SPEED) {
       oled_write_raw(sit[current_frame], ANIM_SIZE);
@@ -179,7 +178,7 @@ static void render_luna(int x, int y) {
   static uint32_t anim_timer = 0;
   if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION) {
     anim_timer = timer_read32();
-    animate_luna();
+    luna_animate();
   }
 }
 
@@ -192,10 +191,10 @@ void process_record_luna(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case KC_SPC:
       if (record->event.pressed) {
-        isJumping = true;
-        showJump = true;
+        is_jumping = true;
+        show_jump = true;
       } else {
-        isJumping = false;
+        is_jumping = false;
       }
       break;
     default:
@@ -206,41 +205,40 @@ void process_record_luna(uint16_t keycode, keyrecord_t *record) {
 
 // Feedback
 
-const char empty_message[] = "   ";
-const char* base_message = empty_message;
-const char* message = empty_message;
+const char message_empty[] = "   ";
+const char* message_base = message_empty;
+const char* message_cur = message_empty;
 
 uint32_t message_timer = 0;
 
-void set_message(const char* str) {
-  base_message = str;
-  message = str;
+void message_set(const char* str) {
+  message_base = str;
+  message_cur = str;
 }
 
-
-void flash_message(const char* str) {
+void message_flash(const char* str) {
   message_timer = timer_read32();
-  message = str;
+  message_cur = str;
 }
 
-void render_message(int x, int y) {
-  if (message != base_message && timer_elapsed32(message_timer) > FEEDBACK_TIMEOUT)
-    message = base_message;
+void message_render(int x, int y) {
+  if (message_cur != message_base && timer_elapsed32(message_timer) > FEEDBACK_TIMEOUT)
+    message_cur = message_base;
 
   oled_set_cursor(x, y);
-  oled_write(message, false);
+  oled_write(message_cur, false);
 }
 
 void show_os_mode_keymap(uint16_t keycode) {
   switch (keycode) {
     case U_WIN:
-      flash_message("Win");
+      message_flash("win");
       break;
     case U_MAC:
-      flash_message("Mac");
+      message_flash("mac");
       break;
     case U_LNX:
-      flash_message("Lnx");
+      message_flash("lnx");
       break;
     default:
       break;
@@ -248,37 +246,37 @@ void show_os_mode_keymap(uint16_t keycode) {
 }
 
 void show_default_layer_keymap(uint8_t layer) {
-  set_message(empty_message);
+  message_set(message_empty);
   switch (layer) {
     case U_BASE:
-      flash_message("Cmk");
+      message_flash("cmk");
       break;
     case U_EXTRA:
-      flash_message("Qty");
+      message_flash("qty");
       break;
     case U_TAP:
-      flash_message("Tap");
+      message_flash("tap");
       break;
     case U_BUTTON:
-      set_message("Btn");
+      message_set("btn");
       break;
     case U_NAV:
-      set_message("Nav");
+      message_set("nav");
       break;
     case U_MOUSE:
-      set_message("Mse");
+      message_set("mse");
       break;
     case U_MEDIA:
-      set_message("Med");
+      message_set("med");
       break;
     case U_NUM:
-      set_message("Num");
+      message_set("num");
       break;
     case U_SYM:
-      set_message("Sym");
+      message_set("sym");
       break;
     case U_FUN:
-      set_message("Fun");
+      message_set("fun");
       break;
     default:
       break;
@@ -287,16 +285,16 @@ void show_default_layer_keymap(uint8_t layer) {
 
 void show_toggle_keymap(uint16_t keycode, bool value) {
   if (value)
-    flash_message("[x]");
+    message_flash("[x]");
   else
-    flash_message("[ ]");
+    message_flash("[ ]");
 }
 
 void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
-    flash_message("-=-");
+    message_flash("===");
   else
-    flash_message("- -");
+    message_flash("-+-");
 }
 
 
@@ -322,8 +320,8 @@ void render_miryoku_logo(int x, int y) {
 // Oled
 
 void oled_task_left(void) {
-  render_message(1, 1);
-  render_luna(0, 6);
+  message_render(1, 1);
+  luna_render(0, 6);
 }
 
 void oled_task_right(void) {
