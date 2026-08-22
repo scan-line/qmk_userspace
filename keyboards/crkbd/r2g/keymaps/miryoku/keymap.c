@@ -214,13 +214,13 @@ void render_message(int x, int y) {
 void show_os_mode_keymap(uint16_t keycode) {
   switch (keycode) {
     case U_WIN:
-      flash_message(PSTR("Win"));
+      flash_message(PSTR("win"));
       break;
     case U_MAC:
-      flash_message(PSTR("Mac"));
+      flash_message(PSTR("mac"));
       break;
     case U_LNX:
-      flash_message(PSTR("Lnx"));
+      flash_message(PSTR("lnx"));
       break;
     default:
       break;
@@ -228,39 +228,39 @@ void show_os_mode_keymap(uint16_t keycode) {
 }
 
 void show_default_layer_keymap(uint8_t layer) {
-  set_message(empty_message);
   switch (layer) {
     case U_BASE:
-      flash_message(PSTR("Cmk"));
+      set_message(PSTR("cmk"));
       break;
     case U_EXTRA:
-      flash_message(PSTR("Qty"));
+      set_message(PSTR("qty"));
       break;
     case U_TAP:
-      flash_message(PSTR("Tap"));
+      set_message(PSTR("tap"));
       break;
     case U_BUTTON:
-      set_message(PSTR("Btn"));
+      set_message(PSTR("btn"));
       break;
     case U_NAV:
-      set_message(PSTR("Nav"));
+      set_message(PSTR("nav"));
       break;
     case U_MOUSE:
-      set_message(PSTR("Mse"));
+      set_message(PSTR("mse"));
       break;
     case U_MEDIA:
-      set_message(PSTR("Med"));
+      set_message(PSTR("med"));
       break;
     case U_NUM:
-      set_message(PSTR("Num"));
+      set_message(PSTR("num"));
       break;
     case U_SYM:
-      set_message(PSTR("Sym"));
+      set_message(PSTR("sym"));
       break;
     case U_FUN:
-      set_message(PSTR("Fun"));
+      set_message(PSTR("fun"));
       break;
     default:
+      set_message(empty_message);
       break;
   }
 }
@@ -274,9 +274,9 @@ void show_toggle_keymap(uint16_t keycode, bool value) {
 
 void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
-    flash_message(PSTR("-=-"));
+    flash_message(PSTR("==="));
   else
-    flash_message(PSTR("- -"));
+    flash_message(PSTR("-+-"));
 }
 
 
@@ -298,16 +298,22 @@ void render_miryoku_logo(int x, int y) {
   oled_write_raw_P(miryoku_logo, sizeof(miryoku_logo));
 }
 
+void render_info(int x, int y) {
+  oled_set_cursor(x, y);
+  oled_write_P(PSTR("ajf"), false);
+}
+
 
 // Oled
 
 void oled_task_left(void) {
-  render_message(1, 1);
-  render_luna(0, 6);
+  render_message(1, 8);
+  render_luna(0, 2);
 }
 
 void oled_task_right(void) {
-  render_miryoku_logo(0, 5);
+  render_info(1, 8);
+  render_miryoku_logo(0, 1);
 }
 
 bool oled_task_user(void) {
@@ -321,6 +327,8 @@ bool oled_task_user(void) {
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  const uint8_t default_layer = get_highest_layer(default_layer_state);
+  show_default_layer_keymap(default_layer);
   return OLED_ROTATION_270;
 }
 
