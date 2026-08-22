@@ -6,3 +6,10 @@
 #pragma once
 
 #include "layouts/split_3x6_3/miryoku/config.h"
+
+// Enable lcd timeout
+#undef QUANTUM_PAINTER_DISPLAY_TIMEOUT
+#define QUANTUM_PAINTER_DISPLAY_TIMEOUT 60000
+
+// Configure Luna
+#define WPM_UNFILTERED

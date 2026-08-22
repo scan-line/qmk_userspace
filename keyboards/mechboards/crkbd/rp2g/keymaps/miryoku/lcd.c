@@ -19,6 +19,9 @@
 #define __ 0xb6, 0x15
 #define XX 0x63, 0x8f
 
+// Fonts
+LV_FONT_DECLARE(source_code_pro_medium_24);
+
 // Base style.
 static lv_style_t base;
 // Plain style, removing borders and other decoration.
@@ -31,7 +34,7 @@ void init_lcd_styles(void) {
   lv_style_set_bg_color(&base, lv_color_hex(0xb2c2af));
   lv_style_set_text_color(&base, lv_color_hex(0x667079));
   lv_style_set_text_align(&base, LV_TEXT_ALIGN_CENTER);
-  lv_style_set_text_font(&base, &lv_font_montserrat_24);
+  lv_style_set_text_font(&base, &source_code_pro_medium_24);
 
   lv_style_init(&plain);
   lv_style_set_border_width(&plain, 0);
@@ -609,9 +612,9 @@ void show_default_layer_keymap(uint8_t layer) {
 
 void show_toggle_keymap(uint16_t keycode, bool value) {
   if (value)
-    message_flash(LV_SYMBOL_OK);
+    message_flash("[x]");
   else
-    message_flash(LV_SYMBOL_CLOSE);
+    message_flash("[ ]");
 }
 
 void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
@@ -681,6 +684,8 @@ void info_init(void) {
 
 // Lcd
 
+painter_device_t lcd;
+
 void lcd_init_left(void) {
   lv_obj_add_style(lv_scr_act(), &base, LV_PART_MAIN);
 
@@ -715,7 +720,7 @@ void lcd_init_right(void) {
 void lcd_init(void) {
   // Initialise the lcd
   wait_ms(LCD_WAIT_TIME);
-  painter_device_t lcd = qp_st7735_make_spi_device(LCD_WIDTH, LCD_HEIGHT, LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN, LCD_SPI_DIVISOR, LCD_SPI_MODE);
+  lcd = qp_st7735_make_spi_device(LCD_WIDTH, LCD_HEIGHT, LCD_CS_PIN, LCD_DC_PIN, LCD_RST_PIN, LCD_SPI_DIVISOR, LCD_SPI_MODE);
   qp_init(lcd, LCD_ROTATION);
   qp_set_viewport_offsets(lcd, LCD_OFFSET_X, LCD_OFFSET_Y);
 
@@ -749,4 +754,13 @@ void lcd_housekeeping_task(void) {
   } else {
     lcd_task_right();
   }
+}
+
+void suspend_power_down_keymap(void) {
+  // May be run multiple times on suspend
+  qp_power(lcd, false);
+}
+
+void suspend_wakeup_init_keymap(void) {
+  qp_power(lcd, true);
 }
