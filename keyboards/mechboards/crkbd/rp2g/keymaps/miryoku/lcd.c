@@ -572,7 +572,7 @@ void show_os_mode_keymap(uint16_t keycode) {
   }
 }
 
-void show_default_layer_keymap(uint8_t layer) {
+void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
   switch (layer) {
     case U_BASE:
       message_set("cmk");
@@ -695,8 +695,9 @@ void lcd_init_left(void) {
   message_init();
   lv_obj_align(message, LV_ALIGN_TOP_MID, 0, 110);
 
+  const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
   const uint8_t default_layer = get_highest_layer(default_layer_state);
-  show_default_layer_keymap(default_layer);
+  show_layer_keymap(layer, default_layer);
 }
 
 void lcd_init_right(void) {

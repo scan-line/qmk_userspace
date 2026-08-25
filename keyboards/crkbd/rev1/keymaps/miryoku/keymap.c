@@ -245,17 +245,16 @@ void show_os_mode_keymap(uint16_t keycode) {
   }
 }
 
-void show_default_layer_keymap(uint8_t layer) {
-  message_set(message_empty);
+void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
   switch (layer) {
     case U_BASE:
-      message_flash("cmk");
+      message_set("cmk");
       break;
     case U_EXTRA:
-      message_flash("qty");
+      message_set("qty");
       break;
     case U_TAP:
-      message_flash("tap");
+      message_set("tap");
       break;
     case U_BUTTON:
       message_set("btn");
@@ -279,7 +278,8 @@ void show_default_layer_keymap(uint8_t layer) {
       message_set("fun");
       break;
     default:
-      break;
+      message_set(message_empty);
+    break;
   }
 }
 
@@ -339,6 +339,9 @@ bool oled_task_user(void) {
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
+  const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
+  const uint8_t default_layer = get_highest_layer(default_layer_state);
+  show_layer_keymap(layer, default_layer);
   return OLED_ROTATION_270;
 }
 
