@@ -227,7 +227,7 @@ void show_os_mode_keymap(uint16_t keycode) {
   }
 }
 
-void show_default_layer_keymap(uint8_t layer) {
+void show_layer_keymap(uint8_t layer) {
   switch (layer) {
     case U_BASE:
       set_message(PSTR("cmk"));
@@ -327,8 +327,8 @@ bool oled_task_user(void) {
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  const uint8_t default_layer = get_highest_layer(default_layer_state);
-  show_default_layer_keymap(default_layer);
+  const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
+  show_layer_keymap(layer);
   return OLED_ROTATION_270;
 }
 
