@@ -13,6 +13,10 @@
 #undef LOCKING_SUPPORT_ENABLE
 #undef LOCKING_RESYNC_ENABLE
 
+// Split keyboard handedness
+
+#define EE_HANDS
+
 
 // Lighting design
 
