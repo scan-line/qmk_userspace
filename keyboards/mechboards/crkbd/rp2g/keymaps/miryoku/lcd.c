@@ -532,7 +532,7 @@ void message_init(void) {
 }
 
 void message_label_set(const char* str) {
-  if (message && message_cur != str) {
+  if (message) {
     message_cur = str;
     lv_label_set_text(message, message_cur);
   }
@@ -618,10 +618,12 @@ void show_toggle_keymap(uint16_t keycode, bool value) {
 }
 
 void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
+  static char buffer[5 + 1];
   if (detent)
-    message_flash("===");
+    sprintf(buffer, "=%d=", value);
   else
-    message_flash("-+-");
+    sprintf(buffer, "%d", value);
+  message_flash(buffer);
 }
 
 
