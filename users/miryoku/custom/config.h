@@ -106,6 +106,11 @@ U_NP,              U_NP,              KC_LPRN,           KC_RPRN,           KC_U
 #define FEEDBACK_TIMEOUT 3000
 
 
+// Split keyboard
+
+#define SPLIT_TRANSACTION_IDS_USER USER_SYNC_OS_MODE
+
+
 // Configure QMK
 
 // Tapping terms

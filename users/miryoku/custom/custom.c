@@ -10,6 +10,10 @@
 #include "miryoku.h"
 #include "process_magic.h"
 
+#ifdef SPLIT_KEYBOARD
+#include "transactions.h"
+#endif
+
 
 // Qmk definitions
 
@@ -130,13 +134,23 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
 
 // OS mode
 
+static os_mode_t os_mode = OS_MODE_WIN;
+
 os_mode_t os_mode_get(void) {
+  return os_mode;
+}
+
+void os_mode_set_noeeprom(os_mode_t mode) {
+  os_mode = mode;
+}
+
+void os_mode_init(void) {
   if (keymap_config.swap_lctl_lgui)
-    return OS_MODE_MAC;
+    os_mode_set_noeeprom(OS_MODE_MAC);
   else if (user_config.os_mode_linux)
-    return OS_MODE_LNX;
+    os_mode_set_noeeprom(OS_MODE_LNX);
   else
-    return OS_MODE_WIN;
+    os_mode_set_noeeprom(OS_MODE_WIN);
 }
 
 bool process_os_mode(uint16_t keycode, keyrecord_t *record) {
@@ -150,6 +164,8 @@ bool process_os_mode(uint16_t keycode, keyrecord_t *record) {
 
   user_config.os_mode_linux = (keycode == U_LNX);
   eeconfig_update_user(user_config.raw);
+
+  os_mode_init();
 
   show_os_mode(keycode);
   return false;
@@ -679,6 +695,53 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 }
 
 
+// Split keyboard sync
+
+#ifdef SPLIT_KEYBOARD
+
+typedef struct {
+  os_mode_t os_mode;
+} sync_os_mode_t;
+
+void sync_os_mode_slave_handler(uint8_t in_buflen, const void* in_data, uint8_t out_buflen, void* out_data) {
+  const sync_os_mode_t* sync_data = (const sync_os_mode_t*)in_data;
+  os_mode_set_noeeprom(sync_data->os_mode);
+}
+
+void sync_os_mode_init(void) {
+  // Sync user state
+  transaction_register_rpc(USER_SYNC_OS_MODE, sync_os_mode_slave_handler);
+}
+
+bool sync_os_mode_send(void) {
+  sync_os_mode_t sync_data;
+  sync_data.os_mode = os_mode_get();
+  return transaction_rpc_send(USER_SYNC_OS_MODE, sizeof(sync_data), &sync_data);
+}
+
+void housekeeping_task_user(void) {
+  if (is_keyboard_master()) {
+    // Throttle to every 500ms
+    static uint32_t last_sync = 0;
+    if (timer_elapsed32(last_sync) > 500) {
+      if (sync_os_mode_send())
+        last_sync = timer_read32();
+    }
+  }
+}
+
+#else
+
+void sync_os_mode_init(void) {
+}
+
+bool sync_os_mode_send(void) {
+  return true;
+}
+
+#endif
+
+
 // Power
 
 __attribute__((weak)) void suspend_power_down_keymap(void) {
@@ -718,5 +781,7 @@ __attribute__((weak)) void keyboard_post_init_keymap(void) {
 void keyboard_post_init_user(void) {
   // Restore user state
   user_config.raw = eeconfig_read_user();
+  os_mode_init();
+  sync_os_mode_init();
   keyboard_post_init_keymap();
 }
