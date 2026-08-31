@@ -306,22 +306,22 @@ void render_info(int x, int y) {
 
 // Oled
 
-void oled_task_left(void) {
+void oled_task_master(void) {
   render_message(1, 8);
   render_luna(0, 2);
 }
 
-void oled_task_right(void) {
+void oled_task_slave(void) {
   render_info(1, 8);
   render_miryoku_logo(0, 1);
 }
 
 bool oled_task_user(void) {
-  if (is_keyboard_left()) {
-    oled_task_left();
+  if (is_keyboard_master()) {
+    oled_task_master();
   } else {
     oled_set_brightness(16);
-    oled_task_right();
+    oled_task_slave();
   }
   return false;
 }
