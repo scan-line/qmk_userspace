@@ -154,7 +154,6 @@ void overlay_media_settings(void) {
 void overlay_layer(uint8_t layer) {
   const uint8_t scale = rgb_matrix_get_val();
   const RGB rgb = layer_accent_color(scale, layer);
-  const RGB on = scaled_hsv_to_rgb(scale, HSV_GREEN);
 
   switch (layer) {
     case U_BASE:
@@ -212,19 +211,12 @@ void overlay_layer(uint8_t layer) {
   }
 
   // For thumb layers, accent the thumb pressed
-  // For base layers, color layer-lock finger
   switch (layer) {
     case U_BASE:
-      rgb_matrix_set_color(led_grid[1][3], on.r, on.g, on.b);
-      rgb_matrix_set_color(led_grid[1][6], on.r, on.g, on.b);
       break;
     case U_EXTRA:
-      rgb_matrix_set_color(led_grid[1][2], on.r, on.g, on.b);
-      rgb_matrix_set_color(led_grid[1][7], on.r, on.g, on.b);
       break;
     case U_TAP:
-      rgb_matrix_set_color(led_grid[1][1], on.r, on.g, on.b);
-      rgb_matrix_set_color(led_grid[1][8], on.r, on.g, on.b);
       break;
     case U_BUTTON:
       break;
@@ -291,32 +283,6 @@ void draw_layer(uint8_t layer) {
   if (layer == U_MEDIA) {
     overlay_media_settings();
     overlay_slider();
-  }
-}
-
-static bool layer_lock = false;
-
-bool rgb_matrix_indicators_user(void) {
-  const uint8_t default_layer = get_highest_layer(default_layer_state);
-  switch (default_layer) {
-    case U_BUTTON:
-    case U_NAV:
-    case U_MOUSE:
-    case U_NUM:
-    case U_SYM:
-    case U_FUN:
-    case U_MEDIA:
-      layer_lock = true;
-      draw_layer(default_layer);
-      return false;
-    default:
-      if (layer_lock && !rgb_matrix_get_suspend_state()) {
-        // Restart matrix to remove overlay
-        rgb_matrix_set_suspend_state(true);
-        rgb_matrix_set_suspend_state(false);
-      }
-      layer_lock = false;
-      return true;
   }
 }
 
