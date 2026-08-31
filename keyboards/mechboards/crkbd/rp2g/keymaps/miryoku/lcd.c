@@ -688,7 +688,7 @@ void info_init(void) {
 
 painter_device_t lcd;
 
-void lcd_init_left(void) {
+void lcd_init_master(void) {
   lv_obj_add_style(lv_scr_act(), &base, LV_PART_MAIN);
 
   luna_init();
@@ -702,7 +702,7 @@ void lcd_init_left(void) {
   show_layer_keymap(layer, default_layer);
 }
 
-void lcd_init_right(void) {
+void lcd_init_slave(void) {
   lv_obj_add_style(lv_scr_act(), &base, LV_PART_MAIN);
 
   // A 60x60 container, allowing for image scale.
@@ -737,25 +737,25 @@ void lcd_init(void) {
     return;
 
   init_lcd_styles();
-  if (is_keyboard_left())
-    lcd_init_left();
+  if (is_keyboard_master())
+    lcd_init_master();
   else
-    lcd_init_right();
+    lcd_init_slave();
 }
 
-void lcd_task_left(void) {
+void lcd_task_master(void) {
   luna_render();
   message_render();
 }
 
-void lcd_task_right(void) {
+void lcd_task_slave(void) {
 }
 
 void lcd_housekeeping_task(void) {
-  if (is_keyboard_left()) {
-    lcd_task_left();
+  if (is_keyboard_master()) {
+    lcd_task_master();
   } else {
-    lcd_task_right();
+    lcd_task_slave();
   }
 }
 
