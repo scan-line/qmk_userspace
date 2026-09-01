@@ -550,39 +550,49 @@ uint16_t key_override_count(void) {
 }
 
 const key_override_t* key_override_get(uint16_t key_override_idx) {
-  if (key_override_idx >= key_override_count()) {
-    return NULL;
-  }
   return custom_overrides[key_override_idx];
 }
 
-uint16_t autoshift_override(uint16_t keycode, keyrecord_t *record) {
+const key_override_t* autoshift_override(uint16_t keycode, keyrecord_t *record) {
   // Look for matching key override
   const uint8_t layer = 1 << read_source_layers_cache(record->event.key);
   for (uint8_t i = 0; i < key_override_count(); i++) {
     const key_override_t *const override = key_override_get(i);
-    if (!override)
-      break;
-
     // Trigger match?
     if (keycode != override->trigger)
       continue;
     // Layer match?
     if ((layer & override->layers) == 0)
       continue;
-    // Found replacement
-    return override->replacement;
+    // Found override
+    return override;
   }
 
   // No override
-  return KC_TRANSPARENT;
+  return NULL;
+}
+
+bool get_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
+  const uint8_t layer = read_source_layers_cache(record->event.key);
+  // Restrict autoshift to NUM layer (-> SYM)
+  // Use shift-key overrides to force the match
+  if (layer == U_NUM)
+    return true;
+
+  return get_custom_auto_shifted_key(keycode, record);
 }
 
 void autoshift_press_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
-  const uint16_t replacement = autoshift_override(keycode, record);
-  if (replacement != KC_TRANSPARENT) {
+  const key_override_t* override = autoshift_override(keycode, record);
+  if (override) {
     // Tap to be consistent with no-override behaviour
-    register_code16(shifted ? replacement : keycode);
+    if (!shifted) {
+      register_code16(keycode);
+    } else if (override->custom_action) {
+      override->custom_action(true, override->context);
+    } else if (override->replacement) {
+      register_code16(override->replacement);
+    }
     return;
   }
 
@@ -593,10 +603,16 @@ void autoshift_press_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
 }
 
 void autoshift_release_user(uint16_t keycode, bool shifted, keyrecord_t *record) {
-  const uint16_t replacement = autoshift_override(keycode, record);
-  if (replacement != KC_TRANSPARENT) {
+  const key_override_t* override = autoshift_override(keycode, record);
+  if (override) {
     // Tap to be consistent with no-override behaviour
-    unregister_code16(shifted ? replacement : keycode);
+    if (!shifted) {
+      unregister_code16(keycode);
+    } else if (override->custom_action) {
+      override->custom_action(false, override->context);
+    } else if (override->replacement) {
+      unregister_code16(override->replacement);
+    }
     return;
   }
 
