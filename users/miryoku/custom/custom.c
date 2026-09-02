@@ -576,9 +576,29 @@ bool get_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
   const uint8_t layer = read_source_layers_cache(record->event.key);
   // Restrict autoshift to NUM layer (-> SYM)
   // Use shift-key overrides to force the match
-  if (layer == U_NUM)
-    return true;
+  if (layer != U_NUM)
+    return false;
 
+  switch (keycode) {
+# ifndef NO_AUTO_SHIFT_ALPHA
+    case AUTO_SHIFT_ALPHA:
+# endif
+# ifndef NO_AUTO_SHIFT_NUMERIC
+    case AUTO_SHIFT_NUMERIC:
+# endif
+# ifndef NO_AUTO_SHIFT_SPECIAL
+#   ifndef NO_AUTO_SHIFT_TAB
+    case KC_TAB:
+#   endif
+#   ifndef NO_AUTO_SHIFT_SYMBOLS
+    case AUTO_SHIFT_SYMBOLS:
+#   endif
+# endif
+# ifdef AUTO_SHIFT_ENTER
+    case KC_ENT:
+# endif
+      return true;
+  }
   return get_custom_auto_shifted_key(keycode, record);
 }
 
