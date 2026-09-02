@@ -579,6 +579,7 @@ bool get_auto_shifted_key(uint16_t keycode, keyrecord_t *record) {
   if (layer != U_NUM)
     return false;
 
+  // Standard implementation
   switch (keycode) {
 # ifndef NO_AUTO_SHIFT_ALPHA
     case AUTO_SHIFT_ALPHA:
