@@ -121,9 +121,10 @@ const uint8_t led_thumb[6] = {
 
 // Flash on/off timings in milliseconds
 // Must end in 0
-const uint16_t flash_value_on_pattern[] = {150, 150, 150, 0};
-const uint16_t flash_value_off_pattern[] = {450, 0};
-const uint16_t flash_value_detent_pattern[] = {150, 0};
+const uint16_t flash_value_on_pattern[] = {75, 75, 75, 0};
+const uint16_t flash_value_off_pattern[] = {225, 0};
+const uint16_t flash_value_detent_pattern[] = {75, 75, 75, 0};
+const uint16_t flash_value_step_pattern[] = {0};
 
 void show_os_mode_keymap(uint16_t keycode) {
   flash_leds(flash_value_on_pattern);
@@ -189,7 +190,7 @@ void show_value_keymap(uint16_t keycode, uint8_t value, bool detent) {
   if (detent)
     flash_leds(flash_value_detent_pattern);
   else
-    flash_leds(flash_off_pattern);
+    flash_leds(flash_value_step_pattern);
 }
 
 

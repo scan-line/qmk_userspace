@@ -108,7 +108,7 @@ RGB layer_accent_color(uint8_t scale, uint8_t layer) {
     case U_FUN:
       return scaled_hsv_to_rgb(scale, HSV_RED);
     default:
-      return scaled_hsv_to_rgb(scale, HSV_YELLOW);
+      return scaled_hsv_to_rgb(scale, HSV_GREEN);
   }
 }
 
@@ -144,11 +144,12 @@ void overlay_media_settings(void) {
     rgb_matrix_set_color(led_grid[1][5], off.r, off.g, off.b);
 #endif
 
+  // Display a block of hsv color below the slider
   const HSV hsv = rgb_matrix_get_hsv();
   const RGB rgb = hsv_to_rgb(hsv);
-  rgb_matrix_set_color(led_grid[0][7], rgb.r, rgb.g, rgb.b);
-  rgb_matrix_set_color(led_grid[0][8], rgb.r, rgb.g, rgb.b);
-  rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
+  for (int i = 0; i < 5; i++) {
+    rgb_matrix_set_color(led_grid[1][i], rgb.r, rgb.g, rgb.b);
+  }
 }
 
 void overlay_layer(uint8_t layer) {
@@ -261,13 +262,6 @@ void overlay_slider(void) {
     else
       rgb_matrix_set_color(led_grid[0][i], 0, 0, 0);
     bits >>= 1;
-  }
-
-  // Display a block of hsv color below the slider
-  const HSV hsv = rgb_matrix_get_hsv();
-  const RGB rgb = hsv_to_rgb(hsv);
-  for (int i = 0; i < 5; i++) {
-    rgb_matrix_set_color(led_grid[1][i], rgb.r, rgb.g, rgb.b);
   }
 
   // Display detent match
