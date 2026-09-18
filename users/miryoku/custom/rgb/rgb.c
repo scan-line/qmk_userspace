@@ -95,6 +95,8 @@ RGB scaled_hsv_to_rgb(uint8_t scale, uint8_t h, uint8_t s, uint8_t v) {
 
 RGB layer_accent_color(uint8_t scale, uint8_t layer) {
   switch (layer) {
+    case U_BUTTON:
+      return scaled_hsv_to_rgb(scale, HSV_YELLOW);
     case U_NAV:
       return scaled_hsv_to_rgb(scale, HSV_CYAN);
     case U_MOUSE:
