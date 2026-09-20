@@ -162,6 +162,7 @@ void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
       leds.right = true;
       update_leds();
       break;
+    case U_EDIT:
     case U_BUTTON:
       leds.left = true;
       leds.right = true;

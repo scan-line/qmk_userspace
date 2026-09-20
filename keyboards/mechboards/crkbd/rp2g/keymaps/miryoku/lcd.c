@@ -583,6 +583,9 @@ void show_layer_keymap(uint8_t layer, uint8_t default_layer) {
     case U_TAP:
       message_set("tap");
       break;
+    case U_EDIT:
+      message_set("edt");
+      break;
     case U_BUTTON:
       message_set("btn");
       break;

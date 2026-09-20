@@ -28,7 +28,7 @@
 
 // Duplicated from miryoku.c
 enum {
-    U_TD_BOOT,
+  U_TD_BOOT,
 #define MIRYOKU_X(LAYER, STRING) U_TD_U_##LAYER,
 MIRYOKU_LAYER_LIST
 #undef MIRYOKU_X
@@ -696,6 +696,119 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     default:
       return true;
   }
+}
+
+
+// Edit layer
+
+void tap_dance_boot(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    reset_keyboard();
+  }
+}
+
+void tap_dance_base(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 1) {
+    layer_invert(U_EDIT);
+  } else if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_BASE);
+  }
+}
+
+void tap_dance_extra(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_EXTRA);
+  }
+}
+
+void tap_dance_tap(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_TAP);
+  }
+}
+
+void tap_dance_edit(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_EDIT);
+  }
+}
+
+void tap_dance_button(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_BUTTON);
+  }
+}
+
+void tap_dance_nav(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_NAV);
+  }
+}
+
+void tap_dance_mouse(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_MOUSE);
+  }
+}
+
+void tap_dance_media(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_MEDIA);
+  }
+}
+
+void tap_dance_num(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_NUM);
+  }
+}
+
+void tap_dance_sym(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_SYM);
+  }
+}
+
+void tap_dance_fun(tap_dance_state_t *state, void *user_data) {
+  if (state->count == 2) {
+    layer_off(U_EDIT);
+    default_layer_set((layer_state_t)1 << U_FUN);
+  }
+}
+
+tap_dance_action_t custom_tap_dance_actions[] = {
+  [U_TD_BOOT] = ACTION_TAP_DANCE_FN(tap_dance_boot),
+  [U_TD_U_BASE] = ACTION_TAP_DANCE_FN(tap_dance_base),
+  [U_TD_U_EXTRA] = ACTION_TAP_DANCE_FN(tap_dance_extra),
+  [U_TD_U_TAP] = ACTION_TAP_DANCE_FN(tap_dance_tap),
+  [U_TD_U_EDIT] = ACTION_TAP_DANCE_FN(tap_dance_edit),
+  [U_TD_U_BUTTON] = ACTION_TAP_DANCE_FN(tap_dance_button),
+  [U_TD_U_NAV] = ACTION_TAP_DANCE_FN(tap_dance_nav),
+  [U_TD_U_MOUSE] = ACTION_TAP_DANCE_FN(tap_dance_mouse),
+  [U_TD_U_MEDIA] = ACTION_TAP_DANCE_FN(tap_dance_media),
+  [U_TD_U_NUM] = ACTION_TAP_DANCE_FN(tap_dance_num),
+  [U_TD_U_SYM] = ACTION_TAP_DANCE_FN(tap_dance_sym),
+  [U_TD_U_FUN] = ACTION_TAP_DANCE_FN(tap_dance_fun),
+};
+
+uint16_t tap_dance_count(void) {
+  return ARRAY_SIZE(custom_tap_dance_actions);
+}
+
+tap_dance_action_t* tap_dance_get(uint16_t tap_dance_idx) {
+  if (tap_dance_idx >= tap_dance_count())
+    return NULL;
+  return &custom_tap_dance_actions[tap_dance_idx];
 }
 
 

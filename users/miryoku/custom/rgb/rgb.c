@@ -95,6 +95,7 @@ RGB scaled_hsv_to_rgb(uint8_t scale, uint8_t h, uint8_t s, uint8_t v) {
 
 RGB layer_accent_color(uint8_t scale, uint8_t layer) {
   switch (layer) {
+    case U_EDIT:
     case U_BUTTON:
       return scaled_hsv_to_rgb(scale, HSV_YELLOW);
     case U_NAV:
@@ -174,6 +175,7 @@ void overlay_layer(uint8_t layer) {
       rgb_matrix_set_color(led_thumb[1], rgb.r, rgb.g, rgb.b);
       rgb_matrix_set_color(led_thumb[4], rgb.r, rgb.g, rgb.b);
       break;
+    case U_EDIT:
     case U_BUTTON:
        // Accent cut/copy/paste
       rgb_matrix_set_color(led_grid[0][1], rgb.r, rgb.g, rgb.b);
@@ -216,11 +218,9 @@ void overlay_layer(uint8_t layer) {
   // For thumb layers, accent the thumb pressed
   switch (layer) {
     case U_BASE:
-      break;
     case U_EXTRA:
-      break;
     case U_TAP:
-      break;
+    case U_EDIT:
     case U_BUTTON:
       break;
     case U_NAV:
