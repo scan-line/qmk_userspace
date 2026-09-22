@@ -13,4 +13,7 @@
 void set_slider(uint8_t value, bool detent);
 void clear_slider(void);
 
+void pause_feedback(void);
+void resume_feedback(void);
+
 #endif

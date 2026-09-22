@@ -282,6 +282,16 @@ void draw_layer(uint8_t layer) {
   }
 }
 
+static bool feedback_paused = false;
+
+void pause_feedback(void) {
+  feedback_paused = true;
+}
+
+void resume_feedback(void) {
+  feedback_paused = false;
+}
+
 bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
@@ -289,8 +299,10 @@ bool rgb_matrix_effect_feedback(effect_params_t* params) {
     clear_slider();
   }
 
-  const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
-  draw_layer(layer);
+  if (!feedback_paused) {
+    const uint8_t layer = get_highest_layer(layer_state|default_layer_state);
+    draw_layer(layer);
+  }
 
   return rgb_matrix_check_finished_leds(led_max);
 }
@@ -304,6 +316,12 @@ void set_slider(uint8_t value, bool detent) {
 }
 
 void clear_slider(void) {
+}
+
+void pause_feedback(void) {
+}
+
+void resume_feedback(void) {
 }
 
 #endif

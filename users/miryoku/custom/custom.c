@@ -707,13 +707,26 @@ void tap_dance_boot(tap_dance_state_t *state, void *user_data) {
   }
 }
 
-void tap_dance_base(tap_dance_state_t *state, void *user_data) {
+void tap_dance_base_on_each_tap(tap_dance_state_t *state, void *user_data) {
+  // When fast-releasing a layer toggle
+  // feedback can briefly flash a base layer
+  // before the edit layer shows.
+  // (Waiting the tapping term before counting 1 or 2).
+  // Pause feedback to avoid the flash.
+  pause_feedback();
+}
+
+void tap_dance_base_on_dance_finished(tap_dance_state_t *state, void *user_data) {
   if (state->count == 1) {
     layer_invert(U_EDIT);
   } else if (state->count == 2) {
     layer_off(U_EDIT);
     default_layer_set((layer_state_t)1 << U_BASE);
   }
+}
+
+void tap_dance_base_on_dance_reset(tap_dance_state_t *state, void *user_data) {
+  resume_feedback();
 }
 
 void tap_dance_extra(tap_dance_state_t *state, void *user_data) {
@@ -788,7 +801,7 @@ void tap_dance_fun(tap_dance_state_t *state, void *user_data) {
 
 tap_dance_action_t custom_tap_dance_actions[] = {
   [U_TD_BOOT] = ACTION_TAP_DANCE_FN(tap_dance_boot),
-  [U_TD_U_BASE] = ACTION_TAP_DANCE_FN(tap_dance_base),
+  [U_TD_U_BASE] = ACTION_TAP_DANCE_FN_ADVANCED(tap_dance_base_on_each_tap, tap_dance_base_on_dance_finished, tap_dance_base_on_dance_reset),
   [U_TD_U_EXTRA] = ACTION_TAP_DANCE_FN(tap_dance_extra),
   [U_TD_U_TAP] = ACTION_TAP_DANCE_FN(tap_dance_tap),
   [U_TD_U_EDIT] = ACTION_TAP_DANCE_FN(tap_dance_edit),
