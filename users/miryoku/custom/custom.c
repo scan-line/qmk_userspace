@@ -870,7 +870,7 @@ void suspend_wakeup_init_user(void) {
 }
 
 
-// Initialization
+// Initialization and shutdown
 
 __attribute__((weak)) void eeconfig_init_keymap(void) {
 }
@@ -894,4 +894,10 @@ void keyboard_post_init_user(void) {
   os_mode_init();
   sync_os_mode_init();
   keyboard_post_init_keymap();
+}
+
+bool shutdown_user(bool jump_to_bootloader) {
+  if (jump_to_bootloader)
+    draw_boot();
+  return true;
 }

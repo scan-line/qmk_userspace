@@ -300,6 +300,8 @@ void draw_boot(void) {
   // Accent the boot keys
   rgb_matrix_set_color(led_grid[0][0], rgb.r, rgb.g, rgb.b);
   rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
+  
+  rgb_matrix_update_pwm_buffers();
 }
 
 bool rgb_matrix_effect_feedback(effect_params_t* params) {
