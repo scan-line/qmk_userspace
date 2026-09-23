@@ -729,89 +729,35 @@ void tap_dance_base_on_dance_reset(tap_dance_state_t *state, void *user_data) {
   resume_feedback();
 }
 
-void tap_dance_extra(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_EXTRA);
-  }
-}
+#define ACTION_TAP_DANCE_LAYER_LOCK(LAYER)                     \
+    {                                                          \
+        .fn        = {NULL, tap_dance_layer_lock, NULL, NULL}, \
+        .user_data = (void *)&((layer_state_t){1 << LAYER}),   \
+    }
 
-void tap_dance_tap(tap_dance_state_t *state, void *user_data) {
+void tap_dance_layer_lock(tap_dance_state_t *state, void *user_data) {
   if (state->count == 2) {
+    // Remove any edit layer
     layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_TAP);
-  }
-}
-
-void tap_dance_edit(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_EDIT);
-  }
-}
-
-void tap_dance_button(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_BUTTON);
-  }
-}
-
-void tap_dance_nav(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_NAV);
-  }
-}
-
-void tap_dance_mouse(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_MOUSE);
-  }
-}
-
-void tap_dance_media(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_MEDIA);
-  }
-}
-
-void tap_dance_num(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_NUM);
-  }
-}
-
-void tap_dance_sym(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_SYM);
-  }
-}
-
-void tap_dance_fun(tap_dance_state_t *state, void *user_data) {
-  if (state->count == 2) {
-    layer_off(U_EDIT);
-    default_layer_set((layer_state_t)1 << U_FUN);
+    // Layer lock
+    const layer_state_t* layer = (layer_state_t *)user_data;
+    default_layer_set(*layer);
   }
 }
 
 tap_dance_action_t custom_tap_dance_actions[] = {
   [U_TD_BOOT] = ACTION_TAP_DANCE_FN(tap_dance_boot),
   [U_TD_U_BASE] = ACTION_TAP_DANCE_FN_ADVANCED(tap_dance_base_on_each_tap, tap_dance_base_on_dance_finished, tap_dance_base_on_dance_reset),
-  [U_TD_U_EXTRA] = ACTION_TAP_DANCE_FN(tap_dance_extra),
-  [U_TD_U_TAP] = ACTION_TAP_DANCE_FN(tap_dance_tap),
-  [U_TD_U_EDIT] = ACTION_TAP_DANCE_FN(tap_dance_edit),
-  [U_TD_U_BUTTON] = ACTION_TAP_DANCE_FN(tap_dance_button),
-  [U_TD_U_NAV] = ACTION_TAP_DANCE_FN(tap_dance_nav),
-  [U_TD_U_MOUSE] = ACTION_TAP_DANCE_FN(tap_dance_mouse),
-  [U_TD_U_MEDIA] = ACTION_TAP_DANCE_FN(tap_dance_media),
-  [U_TD_U_NUM] = ACTION_TAP_DANCE_FN(tap_dance_num),
-  [U_TD_U_SYM] = ACTION_TAP_DANCE_FN(tap_dance_sym),
-  [U_TD_U_FUN] = ACTION_TAP_DANCE_FN(tap_dance_fun),
+  [U_TD_U_EXTRA] = ACTION_TAP_DANCE_LAYER_LOCK(U_EXTRA),
+  [U_TD_U_TAP] = ACTION_TAP_DANCE_LAYER_LOCK(U_TAP),
+  [U_TD_U_EDIT] = ACTION_TAP_DANCE_LAYER_LOCK(U_EDIT),
+  [U_TD_U_BUTTON] = ACTION_TAP_DANCE_LAYER_LOCK(U_BUTTON),
+  [U_TD_U_NAV] = ACTION_TAP_DANCE_LAYER_LOCK(U_NAV),
+  [U_TD_U_MOUSE] = ACTION_TAP_DANCE_LAYER_LOCK(U_MOUSE),
+  [U_TD_U_MEDIA] = ACTION_TAP_DANCE_LAYER_LOCK(U_MEDIA),
+  [U_TD_U_NUM] = ACTION_TAP_DANCE_LAYER_LOCK(U_NUM),
+  [U_TD_U_SYM] = ACTION_TAP_DANCE_LAYER_LOCK(U_SYM),
+  [U_TD_U_FUN] = ACTION_TAP_DANCE_LAYER_LOCK(U_FUN),
 };
 
 uint16_t tap_dance_count(void) {
@@ -923,7 +869,7 @@ void suspend_wakeup_init_user(void) {
 }
 
 
-// Initialization
+// Initialization and shutdown
 
 __attribute__((weak)) void eeconfig_init_keymap(void) {
 }
@@ -947,4 +893,10 @@ void keyboard_post_init_user(void) {
   os_mode_init();
   sync_os_mode_init();
   keyboard_post_init_keymap();
+}
+
+bool shutdown_user(bool jump_to_bootloader) {
+  if (jump_to_bootloader)
+    draw_boot();
+  return true;
 }
