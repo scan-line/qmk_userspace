@@ -16,4 +16,6 @@ void clear_slider(void);
 void pause_feedback(void);
 void resume_feedback(void);
 
+void draw_boot(void);
+
 #endif

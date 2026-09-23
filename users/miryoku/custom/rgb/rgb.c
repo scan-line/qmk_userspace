@@ -292,6 +292,14 @@ void resume_feedback(void) {
   feedback_paused = false;
 }
 
+void draw_boot(void) {
+  rgb_matrix_set_color_all(0, 0, 0);
+  const RGB rgb = scaled_hsv_to_rgb(scale, HSV_RED);
+  // Accent the boot keys
+  rgb_matrix_set_color(led_grid[0][0], rgb.r, rgb.g, rgb.b);
+  rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
+}
+
 bool rgb_matrix_effect_feedback(effect_params_t* params) {
   RGB_MATRIX_USE_LIMITS(led_min, led_max);
 
@@ -322,6 +330,9 @@ void pause_feedback(void) {
 }
 
 void resume_feedback(void) {
+}
+
+void draw_boot(void) {
 }
 
 #endif
