@@ -293,8 +293,10 @@ void resume_feedback(void) {
 }
 
 void draw_boot(void) {
-  rgb_matrix_set_color_all(0, 0, 0);
+  const uint8_t scale = rgb_matrix_get_val();
   const RGB rgb = scaled_hsv_to_rgb(scale, HSV_RED);
+
+  rgb_matrix_set_color_all(0, 0, 0);
   // Accent the boot keys
   rgb_matrix_set_color(led_grid[0][0], rgb.r, rgb.g, rgb.b);
   rgb_matrix_set_color(led_grid[0][9], rgb.r, rgb.g, rgb.b);
